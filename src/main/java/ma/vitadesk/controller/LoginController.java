@@ -101,22 +101,28 @@ public class LoginController implements Initializable {
 	                    stage.centerOnScreen();
 	                    stage.show();
 	                } else if (role.equals("MEDECIN")) {
-	                		Docteur medecinConnecte = new Docteur();
-                        medecinConnecte.setNom("Alae");
-                        medecinConnecte.setPrenom("ESSADI");
-                        medecinConnecte.setSpecialite("Géneraliste");
-                        medecinConnecte.setEmail("medecin@email.com");
-                        medecinConnecte.setTelephone("0123456789");
-                        
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/fxml/medecin_dashboard.fxml"));
-    	                    Parent root = loader.load();
-    	                    Stage stage = new Stage();
-    	                    stage.setTitle("VitaDesk - Dashboard Médecin");
-    	                    stage.setScene(new Scene(root));
-    	                    stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/logo.png")));
-    	                    stage.setResizable(false);
-    	                    stage.centerOnScreen();
-    	                    stage.show();
+	                    // Créer un médecin fictif et le passer au controller
+	                    Docteur medecinConnecte = new Docteur();
+	                    medecinConnecte.setNom("ESSADI");
+	                    medecinConnecte.setPrenom("Alae");
+	                    medecinConnecte.setSpecialite("Généraliste");
+	                    medecinConnecte.setEmail("medecin@email.com");
+	                    medecinConnecte.setTelephone("0123456789");
+	                    
+	                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/fxml/medecin_dashboard.fxml"));
+	                    Parent root = loader.load();
+	                    
+	                    // Récupérer le controller et passer le médecin
+	                    MedecinDashboardController controller = loader.getController();
+	                    controller.setMedecin(medecinConnecte);
+	                    
+	                    Stage stage = new Stage();
+	                    stage.setTitle("VitaDesk - Dashboard Médecin");
+	                    stage.setScene(new Scene(root));
+	                    stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/logo.png")));
+	                    stage.setResizable(false);
+	                    stage.centerOnScreen();
+	                    stage.show();
 	                }
 	            } else {
 	                // Mot de passe ou rôle incorrect
@@ -149,7 +155,7 @@ public class LoginController implements Initializable {
 	}
 
 	private void clearErrorStyle(Control control) {
-	    control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3;"); // revient au style par défaut
+	    control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3;");
 	}
 	
 }

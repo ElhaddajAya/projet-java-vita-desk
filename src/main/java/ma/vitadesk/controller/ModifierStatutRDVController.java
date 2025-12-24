@@ -15,11 +15,12 @@ public class ModifierStatutRDVController {
     @FXML private ComboBox<RendezVous.Statut> comboStatut;
 
     private RendezVous rdv;
-    private SecretaireDashboardController dashboardController;
-
-    public void setData(RendezVous rdv, SecretaireDashboardController dashboardController) {
+    private SecretaireDashboardController dashboardControllerSec;
+    private MedecinDashboardController dashboardControllerMed;
+    
+    public void setData(RendezVous rdv, SecretaireDashboardController dashboardControllerSec) {
         this.rdv = rdv;
-        this.dashboardController = dashboardController;
+        this.dashboardControllerSec = dashboardControllerSec;
 
         // Afficher les infos
         lblPatient.setText("Patient : " + rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
@@ -36,7 +37,7 @@ public class ModifierStatutRDVController {
         RendezVous.Statut nouveauStatut = comboStatut.getValue();
         if (nouveauStatut != null) {
             rdv.setStatut(nouveauStatut);
-            dashboardController.rafraichirPlanning(); // met à jour la couleur
+            dashboardControllerSec.rafraichirPlanning(); // met à jour la couleur
         }
         
         fermer();
@@ -55,7 +56,7 @@ public class ModifierStatutRDVController {
 
         if (confirmation.showAndWait().get() == ButtonType.OK) {
             // Supprimer du planning
-            dashboardController.supprimerRDV(rdv);
+            dashboardControllerSec.supprimerRDV(rdv);
             fermer();
         }
     }
@@ -69,4 +70,17 @@ public class ModifierStatutRDVController {
         Stage stage = (Stage) lblPatient.getScene().getWindow();
         stage.close();
     }
+
+	public void setData(RendezVous rdv, MedecinDashboardController dashboardControllerMed) {
+		this.rdv = rdv;
+        this.setDashboardControllerMed(dashboardControllerMed);
+	}
+
+	public MedecinDashboardController getDashboardControllerMed() {
+		return dashboardControllerMed;
+	}
+
+	public void setDashboardControllerMed(MedecinDashboardController dashboardControllerMed) {
+		this.dashboardControllerMed = dashboardControllerMed;
+	}
 }

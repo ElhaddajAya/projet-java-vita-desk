@@ -15,6 +15,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
@@ -26,12 +27,14 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -71,6 +74,16 @@ public class MedecinDashboardController implements Initializable {
 
     @FXML private BarChart<String, Number> barRdvSemaineMed;
 
+    // ==================== HISTORIQUE PATIENTS ====================
+    @FXML private TableView<Patient> tablePatientsMed;
+    @FXML private TableColumn<Patient, String> colNumSocial;
+    @FXML private TableColumn<Patient, String> colNom;
+    @FXML private TableColumn<Patient, String> colPrenom;
+    @FXML private TableColumn<Patient, String> colDateNaissance;
+    @FXML private TableColumn<Patient, String> colSexe;
+    @FXML private TableColumn<Patient, String> colDerniereConsultation;
+    @FXML private TableColumn<Patient, Void> colActionDossier; // seule action
+    
     // ==================== PLANNING ====================
     @FXML private DatePicker datePickerPlanningMed;
     @FXML private Label selectedDatePlanningMed;
@@ -112,9 +125,14 @@ public class MedecinDashboardController implements Initializable {
         highlightButton(btnAccueil);
 
         // Listener date planning
-        datePickerPlanningMed.valueProperty().addListener((obs, old, newVal) -> rafraichirPlanning());
+        datePickerPlanningMed.valueProperty().addListener((obs, old, newVal) -> {
+            if (newVal != null) {
+                selectedDatePlanningMed.setText(newVal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                rafraichirPlanning();
+            }
+        });
         
-     // Liaison des colonnes du tableau Accueil avec les propriétés du RendezVous
+        // Liaison des colonnes du tableau Accueil avec les propriétés du RendezVous
         colNumAccueil.setCellValueFactory(cellData -> {
             int index = tableConsultationsJourAcceuil.getItems().indexOf(cellData.getValue()) + 1;
             return new SimpleStringProperty(String.valueOf(index));
@@ -137,6 +155,81 @@ public class MedecinDashboardController implements Initializable {
         );
 
         // Style du statut avec couleur
+        colStatutAccueil.setCellFactory(column -> new TableCell<RendezVous, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    RendezVous rdv = getTableView().getItems().get(getIndex());
+                    setStyle("-fx-background-color: " + rdv.getStatut().getCouleur() + "; " +
+                             "-fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center;");
+                }
+            }
+        });
+        
+     // === Configuration du tableau Historique Patients ===
+        colNumSocial.setCellValueFactory(new PropertyValueFactory<>("numSocial"));
+        colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colPrenom.setCellValueFactory(new PropertyValueFactory<>("prenom"));
+        colDateNaissance.setCellValueFactory(new PropertyValueFactory<>("dateNaissance"));
+        colSexe.setCellValueFactory(new PropertyValueFactory<>("sexe"));
+        colDerniereConsultation.setCellValueFactory(cellData -> new SimpleStringProperty("22/12/2025")); // fictif
+
+        // Bouton "Dossier Médical" unique
+        colActionDossier.setCellFactory(param -> new TableCell<Patient, Void>() {
+            private final Button btnDossier = new Button("Dossier Médical");
+
+            {
+                btnDossier.setStyle(
+                    "-fx-background-color: #FF9000; " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-padding: 8 20; " +
+                    "-fx-background-radius: 6;"
+                );
+                btnDossier.setOnAction(e -> {
+                    Patient patient = getTableView().getItems().get(getIndex());
+                    ouvrirDossierMedical(patient);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : btnDossier);
+            }
+        });
+
+        // Données fictives patients pour le médecin
+        ObservableList<Patient> patientsMed = FXCollections.observableArrayList();
+        patientsMed.addAll(
+            new Patient("123456", "Karim", "Benali", "01/01/1980", "0600000000", "M", "CIN123", "Casablanca"),
+            new Patient("789012", "Sara", "Zouhair", "15/05/1995", "0611111111", "F", "CIN456", "Rabat"),
+            new Patient("555666", "Ahmed", "Lahlou", "10/10/1988", "0622222222", "M", "CIN789", "Marrakech")
+        );
+        tablePatientsMed.setItems(patientsMed);
+
+        // === Tableau Accueil : pas de colonne Action ===
+        colNumAccueil.setCellValueFactory(cellData -> {
+            int index = tableConsultationsJourAcceuil.getItems().indexOf(cellData.getValue()) + 1;
+            return new SimpleStringProperty(String.valueOf(index));
+        });
+        colHeureAccueil.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getHeure().format(DateTimeFormatter.ofPattern("HH:mm")))
+        );
+        colPatientAccueil.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getPatient().getPrenom() + " " + cellData.getValue().getPatient().getNom())
+        );
+        colMotifAccueil.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getMotif())
+        );
+        colStatutAccueil.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getStatut().getLabel())
+        );
         colStatutAccueil.setCellFactory(column -> new TableCell<RendezVous, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -205,7 +298,8 @@ public class MedecinDashboardController implements Initializable {
                 rdvAujourdHui.add(rdv);
             }
         }
-        tableConsultationsJourAcceuil.setItems(rdvAujourdHui.sorted((a, b) -> a.getHeure().compareTo(b.getHeure())));
+        rdvAujourdHui.sort((a, b) -> a.getHeure().compareTo(b.getHeure()));
+        tableConsultationsJourAcceuil.setItems(rdvAujourdHui);
     }
 
     private void chargerGraphiqueSemaine() {
@@ -237,100 +331,68 @@ public class MedecinDashboardController implements Initializable {
             if (rdv.getDate().equals(date) && rdv.getDocteur().equals(medecinConnecte)) {
                 VBox cellule = getCellulePourHeureEtJour(rdv.getHeure(), rdv.getDate().getDayOfWeek());
                 if (cellule != null) {
-                    Label label = new Label(rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
-                    label.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-padding: 8; -fx-background-radius: 6; -fx-font-weight: bold;");
-                    label.setMaxWidth(Double.MAX_VALUE);
-                    label.setTooltip(new Tooltip("Motif: " + rdv.getMotif() + "\nHeure: " + rdv.getHeure()));
-                    cellule.getChildren().add(label);
+                    Label labelRDV = new Label(rdv.getAffichageCellule());
+
+                    // === STYLE IDENTIQUE À SECRÉTAIRE ===
+                    labelRDV.setStyle(
+                        "-fx-background-color: " + rdv.getStatut().getCouleur() + "; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-padding: 10 15; " +
+                        "-fx-background-radius: 12; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-font-size: 13; " +
+                        "-fx-alignment: center-left;"
+                    );
+
+                    labelRDV.setMaxWidth(Double.MAX_VALUE);
+                    labelRDV.setTextOverrun(OverrunStyle.ELLIPSIS);
+
+                    // Tooltip complet
+                    String texteTooltip = rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom() +
+                                          "\nDr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom() +
+                                          "\nMotif : " + rdv.getMotif() +
+                                          "\nStatut : " + rdv.getStatut().getLabel();
+                    Tooltip tooltip = new Tooltip(texteTooltip);
+                    tooltip.setStyle("-fx-font-size: 14; -fx-background-color: #333; -fx-text-fill: white;");
+                    Tooltip.install(labelRDV, tooltip);
+
+                    labelRDV.setPadding(new Insets(0, 0, 8, 0));
+
+                    // === CLIC → MODIFIER STATUT ===
+                    labelRDV.setOnMouseClicked(e -> ouvrirModifierStatut(rdv));
+
+                    cellule.getChildren().add(labelRDV);
                 }
             }
         }
     }
 
     private void viderToutesLesCellules() {
-        // Vide toutes les cellules
-        cellLundi0800Med.getChildren().clear();
-        cellMardi0800Med.getChildren().clear();
-        cellMercredi0800Med.getChildren().clear();
-        cellJeudi0800Med.getChildren().clear();
-        cellVendredi0800Med.getChildren().clear();
-        cellSamedi0800Med.getChildren().clear();
+        VBox[] cellules = {
+            cellLundi0800Med, cellMardi0800Med, cellMercredi0800Med, cellJeudi0800Med, cellVendredi0800Med, cellSamedi0800Med,
+            cellLundi0900Med, cellMardi0900Med, cellMercredi0900Med, cellJeudi0900Med, cellVendredi0900Med, cellSamedi0900Med,
+            cellLundi1000Med, cellMardi1000Med, cellMercredi1000Med, cellJeudi1000Med, cellVendredi1000Med, cellSamedi1000Med,
+            cellLundi1100Med, cellMardi1100Med, cellMercredi1100Med, cellJeudi1100Med, cellVendredi1100Med, cellSamedi1100Med,
+            cellLundi1200Med, cellMardi1200Med, cellMercredi1200Med, cellJeudi1200Med, cellVendredi1200Med, cellSamedi1200Med,
+            cellLundi1300Med, cellMardi1300Med, cellMercredi1300Med, cellJeudi1300Med, cellVendredi1300Med, cellSamedi1300Med,
+            cellLundi1400Med, cellMardi1400Med, cellMercredi1400Med, cellJeudi1400Med, cellVendredi1400Med, cellSamedi1400Med,
+            cellLundi1500Med, cellMardi1500Med, cellMercredi1500Med, cellJeudi1500Med, cellVendredi1500Med, cellSamedi1500Med,
+            cellLundi1600Med, cellMardi1600Med, cellMercredi1600Med, cellJeudi1600Med, cellVendredi1600Med, cellSamedi1600Med,
+            cellLundi1700Med, cellMardi1700Med, cellMercredi1700Med, cellJeudi1700Med, cellVendredi1700Med, cellSamedi1700Med
+        };
         
-        cellLundi0900Med.getChildren().clear();
-        cellMardi0900Med.getChildren().clear();
-        cellMercredi0900Med.getChildren().clear();
-        cellJeudi0900Med.getChildren().clear();
-        cellVendredi0900Med.getChildren().clear();
-        cellSamedi0900Med.getChildren().clear();
-        
-        cellLundi1000Med.getChildren().clear();
-        cellMardi1000Med.getChildren().clear();
-        cellMercredi1000Med.getChildren().clear();
-        cellJeudi1000Med.getChildren().clear();
-        cellVendredi1000Med.getChildren().clear();
-        cellSamedi1000Med.getChildren().clear();
-        
-        cellLundi1100Med.getChildren().clear();
-        cellMardi1100Med.getChildren().clear();
-        cellMercredi1100Med.getChildren().clear();
-        cellJeudi1100Med.getChildren().clear();
-        cellVendredi1100Med.getChildren().clear();
-        cellSamedi1100Med.getChildren().clear();
-        
-        cellLundi1200Med.getChildren().clear();
-        cellMardi1200Med.getChildren().clear();
-        cellMercredi1200Med.getChildren().clear();
-        cellJeudi1200Med.getChildren().clear();
-        cellVendredi1200Med.getChildren().clear();
-        cellSamedi1200Med.getChildren().clear();
-        
-        cellLundi1300Med.getChildren().clear();
-        cellMardi1300Med.getChildren().clear();
-        cellMercredi1300Med.getChildren().clear();
-        cellJeudi1300Med.getChildren().clear();
-        cellVendredi1300Med.getChildren().clear();
-        cellSamedi1300Med.getChildren().clear();
-        
-        cellLundi1400Med.getChildren().clear();
-        cellMardi1400Med.getChildren().clear();
-        cellMercredi1400Med.getChildren().clear();
-        cellJeudi1400Med.getChildren().clear();
-        cellVendredi1400Med.getChildren().clear();
-        cellSamedi1400Med.getChildren().clear();
-        
-        cellLundi1500Med.getChildren().clear();
-        cellMardi1500Med.getChildren().clear();
-        cellMercredi1500Med.getChildren().clear();
-        cellJeudi1500Med.getChildren().clear();
-        cellVendredi1500Med.getChildren().clear();
-        cellSamedi1500Med.getChildren().clear();
-        
-        cellLundi1600Med.getChildren().clear();
-        cellMardi1600Med.getChildren().clear();
-        cellMercredi1600Med.getChildren().clear();
-        cellJeudi1600Med.getChildren().clear();
-        cellVendredi1600Med.getChildren().clear();
-        cellSamedi1600Med.getChildren().clear();
-        
-        cellLundi1700Med.getChildren().clear();
-        cellMardi1700Med.getChildren().clear();
-        cellMercredi1700Med.getChildren().clear();
-        cellJeudi1700Med.getChildren().clear();
-        cellVendredi1700Med.getChildren().clear();
-        cellSamedi1700Med.getChildren().clear();
-    }
-
-    private VBox getCellulePourHeureEtJour(LocalTime heure, DayOfWeek jour) {
-        if (jour == DayOfWeek.SUNDAY) return null; // Pas de dimanche
-
-        // Normaliser l'heure : on arrondit à l'heure pleine la plus proche (ex: 10:30 → cellule 10:00)
-        // Tu peux ajuster cette logique plus tard si tu veux des créneaux de 30 min dédiés
-        int heureArrondie = heure.getHour();
-        if (heure.getMinute() >= 30) {
-            heureArrondie = heure.getHour(); // reste sur l'heure courante (ex: 10:30 → 10:00-11:00)
+        for (VBox cellule : cellules) {
+            if (cellule != null) {
+                cellule.getChildren().clear();
+            }
         }
+    }
+    
+        private VBox getCellulePourHeureEtJour(LocalTime heure, DayOfWeek jour) {
+        if (jour == DayOfWeek.SUNDAY) return null;
 
-        String heureStr = String.format("%02d00", heureArrondie); // "0800", "0900", "1000", etc.
+        int heureArrondie = heure.getHour();
+        String heureStr = String.format("%02d00", heureArrondie);
         String jourStr = switch (jour) {
             case MONDAY -> "Lundi";
             case TUESDAY -> "Mardi";
@@ -346,95 +408,75 @@ public class MedecinDashboardController implements Initializable {
         String idCellule = "cell" + jourStr + heureStr + "Med";
 
         return switch (idCellule) {
-            // 08:00
             case "cellLundi0800Med" -> cellLundi0800Med;
             case "cellMardi0800Med" -> cellMardi0800Med;
             case "cellMercredi0800Med" -> cellMercredi0800Med;
             case "cellJeudi0800Med" -> cellJeudi0800Med;
             case "cellVendredi0800Med" -> cellVendredi0800Med;
             case "cellSamedi0800Med" -> cellSamedi0800Med;
-
-            // 09:00
             case "cellLundi0900Med" -> cellLundi0900Med;
             case "cellMardi0900Med" -> cellMardi0900Med;
             case "cellMercredi0900Med" -> cellMercredi0900Med;
             case "cellJeudi0900Med" -> cellJeudi0900Med;
             case "cellVendredi0900Med" -> cellVendredi0900Med;
             case "cellSamedi0900Med" -> cellSamedi0900Med;
-
-            // 10:00 (inclut 10:30)
             case "cellLundi1000Med" -> cellLundi1000Med;
             case "cellMardi1000Med" -> cellMardi1000Med;
             case "cellMercredi1000Med" -> cellMercredi1000Med;
             case "cellJeudi1000Med" -> cellJeudi1000Med;
             case "cellVendredi1000Med" -> cellVendredi1000Med;
             case "cellSamedi1000Med" -> cellSamedi1000Med;
-
-            // 11:00
             case "cellLundi1100Med" -> cellLundi1100Med;
             case "cellMardi1100Med" -> cellMardi1100Med;
             case "cellMercredi1100Med" -> cellMercredi1100Med;
             case "cellJeudi1100Med" -> cellJeudi1100Med;
             case "cellVendredi1100Med" -> cellVendredi1100Med;
             case "cellSamedi1100Med" -> cellSamedi1100Med;
-
-            // 12:00
             case "cellLundi1200Med" -> cellLundi1200Med;
             case "cellMardi1200Med" -> cellMardi1200Med;
             case "cellMercredi1200Med" -> cellMercredi1200Med;
             case "cellJeudi1200Med" -> cellJeudi1200Med;
             case "cellVendredi1200Med" -> cellVendredi1200Med;
             case "cellSamedi1200Med" -> cellSamedi1200Med;
-
-            // 13:00
             case "cellLundi1300Med" -> cellLundi1300Med;
             case "cellMardi1300Med" -> cellMardi1300Med;
             case "cellMercredi1300Med" -> cellMercredi1300Med;
             case "cellJeudi1300Med" -> cellJeudi1300Med;
             case "cellVendredi1300Med" -> cellVendredi1300Med;
             case "cellSamedi1300Med" -> cellSamedi1300Med;
-
-            // 14:00
             case "cellLundi1400Med" -> cellLundi1400Med;
             case "cellMardi1400Med" -> cellMardi1400Med;
             case "cellMercredi1400Med" -> cellMercredi1400Med;
             case "cellJeudi1400Med" -> cellJeudi1400Med;
             case "cellVendredi1400Med" -> cellVendredi1400Med;
             case "cellSamedi1400Med" -> cellSamedi1400Med;
-
-            // 15:00
             case "cellLundi1500Med" -> cellLundi1500Med;
             case "cellMardi1500Med" -> cellMardi1500Med;
             case "cellMercredi1500Med" -> cellMercredi1500Med;
             case "cellJeudi1500Med" -> cellJeudi1500Med;
             case "cellVendredi1500Med" -> cellVendredi1500Med;
             case "cellSamedi1500Med" -> cellSamedi1500Med;
-
-            // 16:00
             case "cellLundi1600Med" -> cellLundi1600Med;
             case "cellMardi1600Med" -> cellMardi1600Med;
             case "cellMercredi1600Med" -> cellMercredi1600Med;
             case "cellJeudi1600Med" -> cellJeudi1600Med;
             case "cellVendredi1600Med" -> cellVendredi1600Med;
             case "cellSamedi1600Med" -> cellSamedi1600Med;
-
-            // 17:00
             case "cellLundi1700Med" -> cellLundi1700Med;
             case "cellMardi1700Med" -> cellMardi1700Med;
             case "cellMercredi1700Med" -> cellMercredi1700Med;
             case "cellJeudi1700Med" -> cellJeudi1700Med;
             case "cellVendredi1700Med" -> cellVendredi1700Med;
             case "cellSamedi1700Med" -> cellSamedi1700Med;
-
             default -> null;
         };
     }
 
     // ==================== DONNÉES FICTIVES ====================
     private void chargerDonneesFictives() {
-        Patient p1 = new Patient("123456", "Karim", "Benali", "01/01/1980", "0600000000", "M", "CIN123", "Casablanca");
-        Patient p2 = new Patient("789012", "Sara", "Zouhair", "15/05/1995", "0611111111", "F", "CIN456", "Rabat");
-        Patient p3 = new Patient("555666", "Ahmed", "Lahlou", "10/10/1988", "0622222222", "M", "CIN789", "Marrakech");
+        Patient p1 = new Patient("123456", "BENALI", "Karim", "01/01/1980", "0600000000", "CIN123", "M", "Casablanca");
+        Patient p2 = new Patient("789012", "ZOUHAIR", "Sara", "15/05/1995", "0611111111", "CIN456", "F", "Rabat");
+        Patient p3 = new Patient("555666", "LAHLOU", "Ahmed", "10/10/1988", "0622222222", "CIN789", "M", "Marrakech");
 
         // RDV aujourd'hui
         listeRDV.add(new RendezVous(LocalDate.now(), LocalTime.of(9, 0), p1, medecinConnecte, "Consultation générale", RendezVous.Statut.PREVU));
@@ -442,8 +484,10 @@ public class MedecinDashboardController implements Initializable {
         listeRDV.add(new RendezVous(LocalDate.now(), LocalTime.of(14, 0), p3, medecinConnecte, "Suivi post-opératoire", RendezVous.Statut.EFFECTUE));
 
         // RDV autres jours pour le graphique
-        listeRDV.add(new RendezVous(LocalDate.now().minusDays(1), LocalTime.of(11, 0), p1, medecinConnecte, "Vaccin", RendezVous.Statut.EFFECTUE));
-        listeRDV.add(new RendezVous(LocalDate.now().plusDays(1), LocalTime.of(15, 0), p2, medecinConnecte, "Bilan sanguin", RendezVous.Statut.PREVU));
+        LocalDate lundi = LocalDate.now().with(DayOfWeek.MONDAY);
+        listeRDV.add(new RendezVous(lundi, LocalTime.of(11, 0), p1, medecinConnecte, "Vaccin", RendezVous.Statut.EFFECTUE));
+        listeRDV.add(new RendezVous(lundi.plusDays(1), LocalTime.of(15, 0), p2, medecinConnecte, "Bilan sanguin", RendezVous.Statut.PREVU));
+        listeRDV.add(new RendezVous(lundi.plusDays(2), LocalTime.of(9, 0), p3, medecinConnecte, "Consultation", RendezVous.Statut.PREVU));
     }
 
     // ==================== DÉCONNEXION ====================
@@ -469,4 +513,49 @@ public class MedecinDashboardController implements Initializable {
             e.printStackTrace();
         }
     }
+    
+    private void ouvrirDossierMedical(Patient patient) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/fxml/dossier_medical.fxml"));
+            Parent root = loader.load();
+
+            DossierMedicalController controller = loader.getController();
+            controller.afficherDossier(patient);
+
+            Stage stage = new Stage();
+            stage.setTitle("Dossier Médical - " + patient.getNom() + " " + patient.getPrenom());
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(tablePatientsMed.getScene().getWindow());
+            stage.setResizable(false);
+            stage.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void ouvrirModifierStatut(RendezVous rdv) {
+    	try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/fxml/modifier_statut_rdv.fxml"));
+            Parent root = loader.load();
+
+            ModifierStatutRDVController controller = loader.getController();
+            controller.setData(rdv, this);
+
+            Stage stage = new Stage();
+            stage.setTitle("Modifier le statut");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(tabPaneMain.getScene().getWindow());
+            stage.setResizable(false);
+            stage.showAndWait();
+
+            rafraichirPlanning(); // au cas où annulé
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
 }
