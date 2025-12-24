@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+
+
+<ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="460.0" prefWidth="694.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ma.vitadesk.controller.AjouterRDVController">
+   <content>
+      <VBox alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="443.0" prefWidth="691.0" spacing="30.0" style="-fx-background-color: white; -fx-background-radius: 10;">
+         <children>
+            <VBox prefWidth="1003.0" style="-fx-background-color: #ffffff;" styleClass="tab-pane" stylesheets="@../css/style.css">
+               <children>
+                  <VBox prefHeight="37.0" prefWidth="937.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="15.0">
+                           <children>
+                              <ImageView fitHeight="34.0" fitWidth="34.0">
+                                 <image>
+                                    <Image url="@../../images/planning.png" />
+                                 </image>
+                              </ImageView>
+                              <VBox prefHeight="39.0" prefWidth="622.0">
+                                 <children>
+                                    <Label contentDisplay="CENTER" prefHeight="35.0" prefWidth="551.0" style="-fx-text-fill: #0a68ffff;" text="Nouveau Rendez-vous">
+                                       <font>
+                                          <Font name="System Bold" size="24.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator prefWidth="200.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+            <VBox spacing="20.0">
+               <children>
+                  <GridPane alignment="CENTER" hgap="20.0" prefHeight="256.0" prefWidth="611.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-width: 0.1px; -fx-border-color: black; -fx-border-radius: 10;" vgap="15.0" VBox.vgrow="ALWAYS">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="-Infinity" minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <effect>
+                        <DropShadow blurType="GAUSSIAN" offsetY="8.0">
+                           <color>
+                              <Color opacity="0.15000000596046448" />
+                           </color>
+                        </DropShadow>
+                     </effect>
+                     <padding>
+                        <Insets bottom="25.0" left="35.0" right="35.0" top="23.0" />
+                     </padding>
+                     <children>
+                        <Label text="Date">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Heure" GridPane.rowIndex="1">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Docteur" GridPane.rowIndex="3">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Motif" GridPane.rowIndex="4">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Patient" GridPane.rowIndex="2">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <DatePicker fx:id="datePickerRDV" prefHeight="49.0" prefWidth="261.0" promptText="DD/MM/YYY" style="-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3px;" GridPane.columnIndex="1" />
+                        <ComboBox fx:id="comboHeure" prefHeight="35.0" prefWidth="261.0" promptText="00:00" style="-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <ComboBox fx:id="comboPatient" editable="true" prefHeight="35.0" prefWidth="261.0" promptText="Rechercher patient par nom, prénom..." style="-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <ComboBox fx:id="comboDocteur" editable="true" prefHeight="35.0" prefWidth="261.0" promptText="Rechercher docteur par nom, prénom..." style="-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <TextField fx:id="txtMotif" prefHeight="42.0" prefWidth="253.0" promptText="Motif" style="-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3;" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </TextField>
+                     </children>
+                     <VBox.margin>
+                        <Insets top="-5.0" />
+                     </VBox.margin>
+                  </GridPane>
+               </children>
+            </VBox>
+            <HBox alignment="CENTER_RIGHT" maxHeight="-Infinity" prefHeight="38.0" prefWidth="611.0" spacing="20.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#annuler" prefHeight="45.0" prefWidth="110.0" style="-fx-background-color: #EFF2F5; -fx-background-radius: 6; -fx-border-width: 0.1px; -fx-border-color: black; -fx-border-radius: 6;" text="Annuler" textAlignment="CENTER" textFill="#575555">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Button>
+                  <Button maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#enregistrer" prefHeight="45.0" prefWidth="110.0" style="-fx-background-color: #4D93FF; -fx-background-radius: 6;" text="Enregistrer" textAlignment="CENTER" textFill="WHITE">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="25.0" />
+         </padding>
+      </VBox>
+   </content>
+</ScrollPane>

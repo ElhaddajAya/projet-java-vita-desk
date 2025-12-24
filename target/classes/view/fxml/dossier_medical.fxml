@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+
+<ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="685.0" prefWidth="694.0" style="-fx-background-color: white;" vvalue="1.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ma.vitadesk.controller.DossierMedicalController">
+   <content>
+      <VBox alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="965.0" prefWidth="678.0" spacing="30.0" style="-fx-background-color: white; -fx-background-radius: 10;">
+         <children>
+            <VBox prefWidth="1003.0" style="-fx-background-color: #ffffff;" styleClass="tab-pane" stylesheets="@../css/style.css">
+               <children>
+                  <VBox prefHeight="37.0" prefWidth="937.0">
+                     <children>
+                        <HBox spacing="15.0">
+                           <children>
+                              <ImageView fitHeight="37.0" fitWidth="37.0">
+                                 <image>
+                                    <Image url="@../../images/check-up_2382149.png" />
+                                 </image>
+                              </ImageView>
+                              <VBox prefHeight="39.0" prefWidth="622.0">
+                                 <children>
+                                    <Label contentDisplay="CENTER" prefHeight="35.0" prefWidth="551.0" style="-fx-text-fill: #0a68ffff;" text="Dossier Médical">
+                                       <font>
+                                          <Font name="System Bold" size="24.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator prefWidth="200.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+            <VBox spacing="20.0">
+               <children>
+                  <Label text="Infos Patient">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <padding>
+                        <Insets left="5.0" />
+                     </padding>
+                  </Label>
+                  <GridPane alignment="CENTER" hgap="20.0" prefHeight="281.0" prefWidth="598.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-width: 0.1px; -fx-border-color: black; -fx-border-radius: 10;" vgap="15.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <effect>
+                        <DropShadow blurType="GAUSSIAN" offsetY="8.0">
+                           <color>
+                              <Color opacity="0.15000000596046448" />
+                           </color>
+                        </DropShadow>
+                     </effect>
+                     <children>
+                        <Label text="Patient :">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblPatientNom" text="Karim Benali" GridPane.columnIndex="1">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Sexe :" GridPane.rowIndex="1">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblSexe" text="M" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Date de Naissance :" GridPane.rowIndex="2">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblDateNaissance" text="15/03/1985" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Groupe sanguin :" GridPane.rowIndex="3">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblGroupeSanguin" text="O+" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Allergies :" GridPane.rowIndex="4">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblAllergies" text="..." GridPane.columnIndex="1" GridPane.rowIndex="4">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Antecedants :" GridPane.rowIndex="5">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblAntecedents" text="..." GridPane.columnIndex="1" GridPane.rowIndex="5">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                     </children>
+                     <padding>
+                        <Insets bottom="20.0" left="35.0" right="35.0" top="20.0" />
+                     </padding>
+                  </GridPane>
+               </children>
+            </VBox>
+            <Separator prefWidth="200.0">
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+            </Separator>
+            <VBox alignment="CENTER_LEFT" prefHeight="389.0" prefWidth="598.0" spacing="20.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <Label text="Historique des Consultations">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <padding>
+                        <Insets left="5.0" />
+                     </padding>
+                  </Label>
+                  <HBox alignment="CENTER_LEFT" prefHeight="60.0" prefWidth="923.0" spacing="30.0">
+                     <children>
+                        <TextField prefHeight="29.0" prefWidth="421.0" promptText="Rechercher par date de consultation, médecin, diagnostic, ...">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </TextField>
+                     </children>
+                  </HBox>
+                  <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="335.0" prefWidth="598.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: black; -fx-border-radius: 10; -fx-border-width: 0.1px;" vvalue="1.0">
+                     <content>
+                        <TableView fx:id="tableConsultations" prefHeight="289.0" prefWidth="595.0" style="-fx-background-color: white; -fx-background-radius: 10;" stylesheets="@../css/style.css" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+					    <columns>
+					        <TableColumn fx:id="colDateConsult" prefWidth="120" text="Date" />
+					        <TableColumn fx:id="colMedecin" prefWidth="150" text="Médecin" />
+					        <TableColumn fx:id="colDiagnostic" prefWidth="200" text="Diagnostic" />
+					        <TableColumn fx:id="colTraitement" prefWidth="250" text="Traitement" />
+					        <TableColumn fx:id="colObservations" prefWidth="200" text="Observations" />
+					        <TableColumn fx:id="colPrix" prefWidth="100" text="Prix" />
+					    </columns>
+					    <columnResizePolicy>
+					        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+					    </columnResizePolicy>
+					</TableView>
+                     </content>
+                     <effect>
+                        <DropShadow blurType="GAUSSIAN" offsetY="8.0">
+                           <color>
+                              <Color opacity="0.15000000596046448" />
+                           </color>
+                        </DropShadow>
+                     </effect>
+                  </ScrollPane>
+               </children>
+            </VBox>
+            <VBox alignment="CENTER_RIGHT">
+               <children>
+                  <Button fx:id="btnExporterDossierMedical" mnemonicParsing="false" onAction="#exporterDossierPDF" prefHeight="53.0" prefWidth="145.0" style="-fx-background-color: #28a745; -fx-background-radius: 6;" text="Exporter Dossier" textAlignment="CENTER" textFill="WHITE">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Button>
+               </children>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="25.0" />
+         </padding>
+      </VBox>
+   </content>
+</ScrollPane>

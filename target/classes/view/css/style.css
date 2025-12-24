@@ -1,0 +1,147 @@
+/* BarChart - première série */
+.default-color0.chart-bar {
+    -fx-bar-fill: #FF9000;
+}
+
+/* Couleur de la ligne du LineChart */
+.default-color0.chart-line-symbol {
+    -fx-background-color: #0d6efd, white; /* bleu pour les points, blanc intérieur */
+}
+
+.default-color0.chart-series-line {
+    -fx-stroke: #0d6efd; /* couleur de la ligne */
+    -fx-stroke-width: 3px; /* épaisseur */
+}
+
+/* Optionnel : enlever les points si tu veux seulement la ligne */
+.default-color0.chart-line-symbol {
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+/* Hover sur la ligne pour effet */
+.chart-series-line:hover {
+    -fx-stroke-width: 4px;
+}
+
+/* Source - https://stackoverflow.com/a */
+.tab-pane {
+    -fx-tab-max-height: 0 ;
+} 
+.tab-pane .tab-header-area {
+    visibility: hidden ;
+}
+
+/* Sidebar menu buttons - look like labels, fully customizable */
+
+/* Hover : fond bleu clair */
+.sidebar-menu-btn:hover {
+    -fx-text-fill:  #0a68ffff;
+    	-fx-background-color: white;
+}
+
+/* Selected : fond bleu + texte blanc */
+.sidebar-menu-btn.selected {
+    -fx-text-fill:  #0a68ffff;
+    	-fx-background-color: white;
+}
+
+/* Style général de la TableView */
+/*
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 5);
+} */
+
+/* En-tête des colonnes : bleu foncé comme le planning */
+.table-view .column-header-background {
+    -fx-background-color: #4D93FF;
+    -fx-background-radius: 10 10 0 0;
+    -fx-padding: 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-pref-height: 60px;     
+    -fx-max-height: 60px;
+    -fx-min-height: 60px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+	-fx-padding: 15 10 15 10;
+	-fx-alignment: CENTER;
+}
+
+.table-view .column-header-background .column-header {
+    -fx-border-color: transparent white transparent transparent; /* ligne blanche à droite */
+    -fx-border-width: 0 1 0 0;
+}
+
+/* Pour que le dernier n'ait pas de séparateur à droite */
+.table-view .column-header-background .filler {
+    -fx-background-color: #0d6efd; /* même couleur que l'en-tête */
+}
+
+/* Label dans l'en-tête */
+.table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+}
+
+/* Lignes de la table */
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-color: #f0f0f0;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Alternance de couleurs */
+/*
+.table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
+}
+*/
+
+/* Ligne sélectionnée : fond bleu clair, texte reste noir */
+.table-row-cell:selected {
+    -fx-background-color: #dbeafe;  /* bleu très clair au lieu de bleu foncé */
+    -fx-text-fill: black;           /* texte noir */
+    -fx-border-color: #f0f0f0;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Hover sur ligne (même si sélectionnée) */
+.table-row-cell:hover {
+    -fx-background-color: #bfdbfe;  /* un peu plus foncé au hover */
+    -fx-text-fill: black;
+    -fx-border-color: #f0f0f0;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Pour être sûr que les cellules gardent le texte noir */
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: black;
+}
+
+/* Texte centré dans les cellules */
+.table-view .table-cell {
+    -fx-alignment: CENTER;
+    -fx-padding: 30 10 15 10;
+}
+
+/* Masquer les lignes de séparation verticales */
+.table-view .column-header-background .filler {
+    -fx-background-color: #0d6efd;
+}
+
+/* Scrollbar : évite le décalage causé par la scrollbar */
+.table-view .virtual-flow .scroll-bar:vertical {
+    -fx-pref-width: 12;
+}
