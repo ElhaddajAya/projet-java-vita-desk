@@ -44,6 +44,9 @@ import javafx.stage.Stage;
 import ma.vitadesk.model.Docteur;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
+import ma.vitadesk.model.Consultation;
+import ma.vitadesk.model.ConsultationDuJour;
+import ma.vitadesk.model.RendezVous;
 
 public class MedecinDashboardController implements Initializable {
 
@@ -78,6 +81,15 @@ public class MedecinDashboardController implements Initializable {
     @FXML private TableColumn<Patient, String> colDerniereConsultation;
     @FXML private TableColumn<Patient, Void> colActionDossier; // seule action
     
+    // ==================== CONSULTATIONS DU JOUR ====================
+    @FXML private TableView<ConsultationDuJour> tableConsultationsJour;
+    @FXML private TableColumn<ConsultationDuJour, String> colNum;
+    @FXML private TableColumn<ConsultationDuJour, String> colHeure;
+    @FXML private TableColumn<ConsultationDuJour, String> colPatient;
+    @FXML private TableColumn<ConsultationDuJour, String> colDateNaissanceConsult;
+    @FXML private TableColumn<ConsultationDuJour, String> colDerniereVisite;
+    @FXML private TableColumn<ConsultationDuJour, Void> colActionConsultJour;
+    
     // ==================== PLANNING ====================
     @FXML private DatePicker datePickerPlanningMed;
     @FXML private Label selectedDatePlanningMed;
@@ -98,6 +110,7 @@ public class MedecinDashboardController implements Initializable {
     // ==================== DONNÉES ====================
     private ObservableList<RendezVous> listeRDV = FXCollections.observableArrayList();
     private ObservableList<Patient> listePatients = FXCollections.observableArrayList();
+    private ObservableList<ConsultationDuJour> listeConsultationsJour = FXCollections.observableArrayList();
     private Docteur medecinConnecte;
 
     // ==================== PASSAGE DU MÉDECIN ====================
@@ -164,13 +177,49 @@ public class MedecinDashboardController implements Initializable {
         });
 
         // Données fictives patients pour le médecin
-        ObservableList<Patient> patientsMed = FXCollections.observableArrayList();
-        patientsMed.addAll(
-            new Patient("123456", "Karim", "Benali", "01/01/1980", "0600000000", "CIN123", "M", "Casablanca"),
-            new Patient("789012", "Sara", "Zouhair", "15/05/1995", "0611111111", "CIN456", "F", "Rabat"),
-            new Patient("555666", "Ahmed", "Lahlou", "10/10/1988", "0622222222", "CIN789", "M", "Marrakech")
+        listePatients.clear();
+        listePatients.addAll(
+            new Patient("123456", "BENALI", "Karim", "01/01/1980", "0600000000", "CIN123", "M", "Casablanca"),
+            new Patient("789012", "ZOUHAIR", "Sara", "15/05/1995", "0611111111", "CIN456", "F", "Rabat"),
+            new Patient("555666", "LAHLOU", "Ahmed", "10/10/1988", "0622222222", "CIN789", "M", "Marrakech")
         );
-        tablePatientsMed.setItems(patientsMed);
+        tablePatientsMed.setItems(listePatients);
+        
+        // === Configuration du tableau Consultations du Jour ===
+        colNum.setCellValueFactory(new PropertyValueFactory<>("numero"));
+        colHeure.setCellValueFactory(new PropertyValueFactory<>("heure"));
+        colPatient.setCellValueFactory(new PropertyValueFactory<>("patient"));
+        colDateNaissanceConsult.setCellValueFactory(new PropertyValueFactory<>("dateNaissance"));
+        colDerniereVisite.setCellValueFactory(new PropertyValueFactory<>("derniereVisite"));
+        
+        // Bouton "Commencer" pour chaque consultation
+        colActionConsultJour.setCellFactory(param -> new TableCell<ConsultationDuJour, Void>() {
+            private final Button btnCommencer = new Button("Commencer");
+
+            {
+                btnCommencer.setStyle(
+                    "-fx-background-color: #FF9000; " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-padding: 8 20; " +
+                    "-fx-background-radius: 6;" + 
+                    "-fx-cursor: HAND;"
+                );
+                btnCommencer.setOnAction(e -> {
+                    ConsultationDuJour consultDuJour = getTableView().getItems().get(getIndex());
+                    ouvrirConsultation(consultDuJour.getRendezVous());
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : btnCommencer);
+            }
+        });
+        
+        // Charger les consultations du jour
+        chargerConsultationsDuJour();
     }
 
     // ==================== NAVIGATION SIDEBAR ====================
@@ -213,6 +262,7 @@ public class MedecinDashboardController implements Initializable {
     private void rafraichirTout() {
         rafraichirPlanning();
         chargerGraphiqueSemaine();
+        chargerConsultationsDuJour();
     }
 
     public void chargerGraphiqueSemaine() {
@@ -387,12 +437,12 @@ public class MedecinDashboardController implements Initializable {
 
     // ==================== DONNÉES FICTIVES ====================
     private void chargerDonneesFictives() {
-        Patient p1 = new Patient("123456", "BENALI", "Karim", "01/01/1980", "0600000000", "CIN123", "M", "Casablanca");
-        Patient p2 = new Patient("789012", "ZOUHAIR", "Sara", "15/05/1995", "0611111111", "CIN456", "F", "Rabat");
-        Patient p3 = new Patient("555666", "LAHLOU", "Ahmed", "10/10/1988", "0622222222", "CIN789", "M", "Marrakech");
-
-        // Ajouter à la liste globale des patients (pour la ComboBox)
-        listePatients.addAll(p1, p2, p3);
+        // Utiliser les patients déjà ajoutés dans initialize()
+        if (listePatients.size() < 3) return; // Sécurité
+        
+        Patient p1 = listePatients.get(0);
+        Patient p2 = listePatients.get(1);
+        Patient p3 = listePatients.get(2);
         
         // RDV aujourd'hui
         listeRDV.add(new RendezVous(LocalDate.now(), LocalTime.of(9, 0), p1, medecinConnecte, "Consultation générale", RendezVous.Statut.PREVU));
@@ -483,6 +533,7 @@ public class MedecinDashboardController implements Initializable {
         listeRDV.remove(rdv);
         rafraichirPlanning();
         chargerGraphiqueSemaine();
+        chargerConsultationsDuJour(); // Rafraîchir aussi les consultations du jour
     }
     
     // Méthode pour ajouter un RDV
@@ -490,6 +541,64 @@ public class MedecinDashboardController implements Initializable {
         listeRDV.add(rdv);
         rafraichirPlanning();
         chargerGraphiqueSemaine();
+        chargerConsultationsDuJour(); // Rafraîchir aussi les consultations du jour
+    }
+    
+    // Méthode pour charger les consultations du jour
+    private void chargerConsultationsDuJour() {
+        listeConsultationsJour.clear();
+        
+        LocalDate aujourdhui = LocalDate.now();
+        int numero = 1;
+        
+        for (RendezVous rdv : listeRDV) {
+            // Ne montrer que les RDV du médecin connecté pour aujourd'hui avec statut PREVU
+            if (rdv.getDate().equals(aujourdhui) && 
+                rdv.getDocteur().equals(medecinConnecte) &&
+                rdv.getStatut() == RendezVous.Statut.PREVU) {
+                
+                listeConsultationsJour.add(new ConsultationDuJour(String.valueOf(numero), rdv));
+                numero++;
+            }
+        }
+        
+        tableConsultationsJour.setItems(listeConsultationsJour);
+    }
+    
+    // Méthode pour ouvrir la fenêtre de consultation
+    private void ouvrirConsultation(RendezVous rdv) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/fxml/commencer_consultation.fxml"));
+            Parent root = loader.load();
+
+            CommencerConsultationController controller = loader.getController();
+            controller.setData(rdv, this);
+
+            Stage stage = new Stage();
+            stage.setTitle("Commencer la Consultation");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(tabPaneMain.getScene().getWindow());
+            stage.setResizable(false);
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Méthode appelée après l'enregistrement d'une consultation
+    public void ajouterConsultation(RendezVous rdv, Consultation consultation) {
+        // Marquer le RDV comme effectué
+        rdv.setStatut(RendezVous.Statut.EFFECTUE);
+        
+        // Rafraîchir les vues
+        rafraichirPlanning();
+        chargerGraphiqueSemaine();
+        chargerConsultationsDuJour();
+        
+        // Ici, vous pourriez aussi enregistrer la consultation dans une base de données
+        // ou l'ajouter à une liste de consultations du patient
     }
     
     // Méthode pour ouvrir la fenêtre d'ajout de RDV

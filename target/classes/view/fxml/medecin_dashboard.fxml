@@ -1225,7 +1225,7 @@
                                           <TableColumn fx:id="colNum" minWidth="5.0" prefWidth="5.0" text="#" />
                                           <TableColumn fx:id="colHeure" prefWidth="40.0" text="Heure" />
                                           <TableColumn fx:id="colPatient" prefWidth="40.0" text="Patient" />
-                                          <TableColumn fx:id="colDateNaissance" prefWidth="40.0" text="Date Naissance" />
+                                          <TableColumn fx:id="colDateNaissanceConsult" prefWidth="40.0" text="Date Naissance" />
                                           <TableColumn fx:id="colDerniereVisite" prefWidth="50.0" text="Dernière Visite " />
                                           <TableColumn fx:id="colActionConsultJour" prefWidth="50.0" text="Action" />
                                        </columns>

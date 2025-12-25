@@ -69,7 +69,7 @@ public class AjouterRDVController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         comboHeure.getItems().addAll(
             "08:00", "09:00", "10:00", "11:00", "12:00",
-            "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
+            "13:00", "14:00", "15:00", "16:00", "17:00"
         );
         comboHeure.setPromptText("Choisir l'heure");
         txtMotif.setPromptText("Ex: Consultation générale, Contrôle...");
