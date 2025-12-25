@@ -15,6 +15,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
@@ -31,6 +33,7 @@ public class CommencerConsultationController {
     @FXML private TextArea txtDiagnostic;
     @FXML private TextArea txtTraitement;
     @FXML private TextArea txtObservations;
+    @FXML private Button btnEnregistrer;
 
     private RendezVous rdv;
     private MedecinDashboardController dashboardController;
@@ -47,35 +50,55 @@ public class CommencerConsultationController {
 
     @FXML
     private void enregistrer() {
-        // Validation
-        if (txtDiagnostic.getText().trim().isEmpty()) {
-            showAlert("Erreur", "Le diagnostic est obligatoire !", Alert.AlertType.ERROR);
-            return;
+        // 1. Réinitialiser les bordures
+        clearErrorStyle(txtDiagnostic);
+        clearErrorStyle(txtTraitement);
+
+        boolean hasError = false;
+
+        // 2. Vérification des champs obligatoires
+        if (txtDiagnostic.getText() == null || txtDiagnostic.getText().trim().isEmpty()) {
+            setErrorStyle(txtDiagnostic);
+            hasError = true;
         }
 
-        if (txtTraitement.getText().trim().isEmpty()) {
-            showAlert("Erreur", "Le traitement est obligatoire !", Alert.AlertType.ERROR);
-            return;
+        if (txtTraitement.getText() == null || txtTraitement.getText().trim().isEmpty()) {
+            setErrorStyle(txtTraitement);
+            hasError = true;
         }
 
-        // Créer la consultation
+        // 3. S’il y a une erreur → on bloque tout
+        if (hasError) {
+            showAlert("Champs obligatoires", "Le diagnostic et le traitement sont requis.", Alert.AlertType.WARNING);
+            return; // ← IMPORTANT : on sort de la méthode, rien d'autre ne s'exécute
+        }
+
+        // 4. Tout est OK → on enregistre
         Consultation consultation = new Consultation(
             LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
             "Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom(),
             txtDiagnostic.getText().trim(),
             txtTraitement.getText().trim(),
-            txtObservations.getText().trim(),
+            txtObservations.getText() == null ? "" : txtObservations.getText().trim(),
             prixConsultation
         );
 
         // Marquer le RDV comme effectué
         rdv.setStatut(RendezVous.Statut.EFFECTUE);
 
-        // Enregistrer dans le dashboard (vous pourrez l'ajouter à une liste de consultations)
+        // Enregistrer dans le dashboard
         dashboardController.ajouterConsultation(rdv, consultation);
 
-        showAlert("Succès", "Consultation enregistrée avec succès !", Alert.AlertType.INFORMATION);
-        fermer();
+        // Message de succès
+        showAlert("Succès", "Consultation enregistrée avec succès !\nVous pouvez maintenant générer l'ordonnance.", Alert.AlertType.INFORMATION);
+
+        // Désactiver le bouton Enregistrer
+        btnEnregistrer.setDisable(true);
+
+        // Optionnel : désactiver les champs pour éviter les modifications
+        txtDiagnostic.setEditable(false);
+        txtTraitement.setEditable(false);
+        txtObservations.setEditable(false);
     }
 
     @FXML
@@ -304,5 +327,14 @@ public class CommencerConsultationController {
         if (line.length() > 0) lines.add(line.toString());
 
         return lines.toArray(new String[0]);
+    }
+    
+ // Méthodes de style (comme dans tes autres controllers)
+    private void setErrorStyle(javafx.scene.control.Control control) {
+        control.setStyle("-fx-background-color: white; -fx-border-color: red; -fx-border-width: 0.3px; -fx-border-radius: 3px; -fx-font-size: 13px;");
+    }
+
+    private void clearErrorStyle(javafx.scene.control.Control control) {
+        control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;");
     }
 }
