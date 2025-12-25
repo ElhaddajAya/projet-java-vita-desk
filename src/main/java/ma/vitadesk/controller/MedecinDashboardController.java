@@ -129,7 +129,7 @@ public class MedecinDashboardController implements Initializable {
             }
         });
         
-     // === Configuration du tableau Historique Patients ===
+        // === Configuration du tableau Historique Patients ===        
         colNumSocial.setCellValueFactory(new PropertyValueFactory<>("numSocial"));
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colPrenom.setCellValueFactory(new PropertyValueFactory<>("prenom"));

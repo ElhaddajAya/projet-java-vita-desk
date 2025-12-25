@@ -13,8 +13,7 @@ public class Patient {
     private final SimpleStringProperty sexe = new SimpleStringProperty();
     private final SimpleStringProperty adresse = new SimpleStringProperty();
 
-    public Patient(String numSocial, String nom, String prenom, String dateNaissance, 
-                   String telephone, String cin, String sexe, String adresse) {
+    public Patient(String numSocial, String nom, String prenom, String dateNaissance, String telephone, String cin, String sexe, String adresse) {
         this.numSocial.set(numSocial);
         this.nom.set(nom);
         this.prenom.set(prenom);
