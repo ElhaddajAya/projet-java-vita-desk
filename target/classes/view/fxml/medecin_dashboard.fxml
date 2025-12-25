@@ -126,9 +126,9 @@
       </AnchorPane>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" pannable="true" prefHeight="728.0" prefWidth="1019.0" style="-fx-background-color: white; -fx-border-width: 0.1px; -fx-border-color: black;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+      <ScrollPane fitToWidth="true" pannable="true" prefHeight="728.0" prefWidth="1019.0" style="-fx-background-color: white; -fx-border-width: 0.1px; -fx-border-color: black;" vvalue="1.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
          <content>
-            <TabPane fx:id="tabPaneMain" prefHeight="1386.0" prefWidth="1003.0" style="-fx-tab-min-height: 0; -fx-tab-max-height: 0; -fx-background-color: white;" stylesheets="@../css/style.css" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="tabPaneMain" prefHeight="904.0" prefWidth="1003.0" style="-fx-tab-min-height: 0; -fx-tab-max-height: 0; -fx-background-color: white;" stylesheets="@../css/style.css" tabClosingPolicy="UNAVAILABLE">
                <tabs>
                   <Tab fx:id="tabAccueil" closable="false" text="Acceuil">
                      <content>
@@ -336,40 +336,6 @@
                                     </GridPane>
                                  </children>
                               </VBox>
-                              <Label text="Consultations Prévues Aujourd'hui">
-                                 <font>
-                                    <Font name="System Bold" size="18.0" />
-                                 </font>
-                                 <padding>
-                                    <Insets left="5.0" />
-                                 </padding>
-                                 <VBox.margin>
-                                    <Insets top="10.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <ScrollPane fitToWidth="true" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: black; -fx-border-radius: 10; -fx-border-width: 0.1px;">
-                                 <content>
-                                    <TableView fx:id="tableConsultationsJourAcceuil" editable="true" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 10;" stylesheets="@../css/style.css" tableMenuButtonVisible="true">
-                                       <columns>
-                                          <TableColumn fx:id="colNumAccueil" minWidth="5.0" prefWidth="5.0" text="#" />
-                                          <TableColumn fx:id="colHeureAccueil" prefWidth="40.0" text="Heure" />
-                                          <TableColumn fx:id="colPatientAccueil" prefWidth="40.0" text="Patient" />
-                                          <TableColumn fx:id="colMotifAccueil" prefWidth="50.0" text="Motif" />
-                                          <TableColumn fx:id="colStatutAccueil" prefWidth="50.0" text="Statut" />
-                                       </columns>
-                                       <columnResizePolicy>
-                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                       </columnResizePolicy>
-                                    </TableView>
-                                 </content>
-                                 <effect>
-                                    <DropShadow blurType="GAUSSIAN" offsetY="8.0">
-                                       <color>
-                                          <Color opacity="0.15000000596046448" />
-                                       </color>
-                                    </DropShadow>
-                                 </effect>
-                              </ScrollPane>
                               <Label text="Mes Rendez-vous cette Semaine">
                                  <font>
                                     <Font name="System Bold" size="18.0" />
@@ -381,7 +347,7 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </Label>
-                              <HBox alignment="CENTER" prefHeight="380.0" prefWidth="923.0" spacing="10.0">
+                              <HBox alignment="CENTER_LEFT" prefHeight="380.0" prefWidth="923.0" spacing="10.0">
                                  <children>
                                     <BarChart fx:id="barRdvSemaineMed" barGap="6.0" prefWidth="457.0" styleClass="default-color0" stylesheets="@../css/style.css" title="Mes RDV cette semaine">
                                        <xAxis>

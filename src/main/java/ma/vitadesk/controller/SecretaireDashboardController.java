@@ -452,16 +452,16 @@ public class SecretaireDashboardController implements Initializable {
 
         if (clicked == btnAccueilSec) {
             tabPaneMainSec.getSelectionModel().select(tabAccueilSec);
-            clicked.setStyle("-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
+            clicked.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
         } else if (clicked == btnDocteursSec) {
             tabPaneMainSec.getSelectionModel().select(tabDocteursSec);
-            clicked.setStyle("-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
+            clicked.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
         } else if (clicked == btnPatientsSec) {
             tabPaneMainSec.getSelectionModel().select(tabPatientsSec);
-            clicked.setStyle("-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
+            clicked.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
         } else if (clicked == btnRendezVousSec) {
             tabPaneMainSec.getSelectionModel().select(tabRendezVousSec);
-            clicked.setStyle("-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
+            clicked.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
         } else if (clicked == btnDeconnexionSec) {
             deconnecter();
         }

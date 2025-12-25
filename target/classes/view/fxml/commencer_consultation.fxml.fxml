@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+
+
+<ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="670.0" prefWidth="694.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <content>
+      <VBox alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="679.0" prefWidth="691.0" spacing="30.0" style="-fx-background-color: white; -fx-background-radius: 10;">
+         <children>
+            <VBox prefWidth="1003.0" style="-fx-background-color: #ffffff;" styleClass="tab-pane" stylesheets="@../css/style.css">
+               <children>
+                  <VBox prefHeight="37.0" prefWidth="937.0">
+                     <children>
+                        <HBox spacing="15.0">
+                           <children>
+                              <ImageView fitHeight="36.0" fitWidth="36.0">
+                                 <image>
+                                    <Image url="@../../images/chat_8987712.png" />
+                                 </image>
+                              </ImageView>
+                              <VBox prefHeight="39.0" prefWidth="622.0">
+                                 <children>
+                                    <Label contentDisplay="CENTER" prefHeight="35.0" prefWidth="551.0" style="-fx-text-fill: #0a68ffff;" text="Consultation">
+                                       <font>
+                                          <Font name="System Bold" size="24.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator prefWidth="200.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+            <Label prefHeight="27.0" prefWidth="699.0" text="Commencer la consultation">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets bottom="-3.0" />
+               </VBox.margin>
+            </Label>
+            <VBox spacing="20.0">
+               <children>
+                  <GridPane alignment="CENTER" hgap="20.0" prefHeight="409.0" prefWidth="611.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-width: 0.1px; -fx-border-color: black; -fx-border-radius: 10;" vgap="15.0" VBox.vgrow="ALWAYS">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints maxHeight="51.333343505859375" minHeight="30.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="98.66667175292969" minHeight="30.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="131.3332977294922" minHeight="10.0" prefHeight="85.0" valignment="TOP" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="112.00002034505209" minHeight="10.0" prefHeight="85.0" valignment="TOP" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="84.00001017252606" minHeight="10.0" prefHeight="85.0" valignment="TOP" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <effect>
+                        <DropShadow blurType="GAUSSIAN" offsetY="8.0">
+                           <color>
+                              <Color opacity="0.15000000596046448" />
+                           </color>
+                        </DropShadow>
+                     </effect>
+                     <padding>
+                        <Insets bottom="25.0" left="35.0" right="35.0" top="23.0" />
+                     </padding>
+                     <children>
+                        <Label text="Patient">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label text="Date" GridPane.rowIndex="1">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label alignment="TOP_LEFT" contentDisplay="TOP" text="Diagnostics" GridPane.rowIndex="2">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets top="5.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <TextArea fx:id="txtDiagnostic" prefHeight="68.0" prefWidth="253.0" promptText="Saisir le diagnostic..." GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </TextArea>
+                        <Label text="Traitement" GridPane.rowIndex="3">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets />
+                           </GridPane.margin>
+                        </Label>
+                        <TextArea fx:id="txtTraitement" prefHeight="68.0" prefWidth="253.0" promptText="Prescription, posologie..." GridPane.columnIndex="1" GridPane.rowIndex="3">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </TextArea>
+                        <Label text="Observations" GridPane.rowIndex="4">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets />
+                           </GridPane.margin>
+                        </Label>
+                        <TextArea fx:id="txtObservations" prefHeight="68.0" prefWidth="253.0" promptText="Notes supplémentaires..." GridPane.columnIndex="1" GridPane.rowIndex="4">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </TextArea>
+                        <Label fx:id="lblPatientConsult" alignment="CENTER_RIGHT" prefHeight="19.0" prefWidth="293.0" text="Nom Prénom" GridPane.columnIndex="1">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblDateConsult" alignment="CENTER_RIGHT" prefHeight="19.0" prefWidth="293.0" text="24/12/2025" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                     </children>
+                     <VBox.margin>
+                        <Insets top="-5.0" />
+                     </VBox.margin>
+                  </GridPane>
+               </children>
+            </VBox>
+            <HBox alignment="CENTER_RIGHT" maxHeight="-Infinity" prefHeight="67.0" prefWidth="611.0" spacing="20.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#annuler" prefHeight="40.0" prefWidth="110.0" style="-fx-background-color: #EFF2F5; -fx-background-radius: 6; -fx-border-width: 0.1px; -fx-border-color: black; -fx-border-radius: 6;" text="Annuler" textAlignment="CENTER" textFill="#575555">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Button>
+                  <Button maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#enregistrer" prefHeight="39.0" prefWidth="110.0" style="-fx-background-color: #4D93FF; -fx-background-radius: 6;" text="Enregistrer" textAlignment="CENTER" textFill="WHITE">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Button>
+                  <Button maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#genererOrdonnance" prefHeight="39.0" prefWidth="168.0" style="-fx-background-color: #FF9000; -fx-background-radius: 6;" text="Générer Ordonnance" textAlignment="CENTER" textFill="WHITE">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="25.0" />
+         </padding>
+      </VBox>
+   </content>
+</ScrollPane>

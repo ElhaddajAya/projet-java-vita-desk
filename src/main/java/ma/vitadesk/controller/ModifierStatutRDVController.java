@@ -1,5 +1,7 @@
 package ma.vitadesk.controller;
 
+import java.time.format.DateTimeFormatter;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -17,6 +19,7 @@ public class ModifierStatutRDVController {
     private RendezVous rdv;
     private SecretaireDashboardController dashboardControllerSec;
     private MedecinDashboardController dashboardControllerMed;
+    private Runnable onUpdate;
     
     public void setData(RendezVous rdv, SecretaireDashboardController dashboardControllerSec) {
         this.rdv = rdv;
@@ -71,10 +74,17 @@ public class ModifierStatutRDVController {
         stage.close();
     }
 
-	public void setData(RendezVous rdv, MedecinDashboardController dashboardControllerMed) {
-		this.rdv = rdv;
-        this.setDashboardControllerMed(dashboardControllerMed);
-	}
+    public void setData(RendezVous rdv, Runnable onUpdate) {
+        this.rdv = rdv;
+        this.onUpdate = onUpdate;
+
+        lblPatient.setText(rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
+        lblDocteur.setText("Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom());
+        lblHeure.setText(rdv.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " à " + rdv.getHeure().format(DateTimeFormatter.ofPattern("HH:mm")));
+
+        comboStatut.getItems().setAll(RendezVous.Statut.values());
+        comboStatut.setValue(rdv.getStatut());
+    }
 
 	public MedecinDashboardController getDashboardControllerMed() {
 		return dashboardControllerMed;

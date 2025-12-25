@@ -65,13 +65,6 @@ public class MedecinDashboardController implements Initializable {
     @FXML private Tab tabConsultationsDuJour;
 
     // ==================== ACCUEIL ====================
-    @FXML private TableView<RendezVous> tableConsultationsJourAcceuil;
-    @FXML private TableColumn<RendezVous, String> colNumAccueil;
-    @FXML private TableColumn<RendezVous, String> colHeureAccueil;
-    @FXML private TableColumn<RendezVous, String> colPatientAccueil;
-    @FXML private TableColumn<RendezVous, String> colMotifAccueil;
-    @FXML private TableColumn<RendezVous, String> colStatutAccueil;
-
     @FXML private BarChart<String, Number> barRdvSemaineMed;
 
     // ==================== HISTORIQUE PATIENTS ====================
@@ -132,45 +125,6 @@ public class MedecinDashboardController implements Initializable {
             }
         });
         
-        // Liaison des colonnes du tableau Accueil avec les propriétés du RendezVous
-        colNumAccueil.setCellValueFactory(cellData -> {
-            int index = tableConsultationsJourAcceuil.getItems().indexOf(cellData.getValue()) + 1;
-            return new SimpleStringProperty(String.valueOf(index));
-        });
-
-        colHeureAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getHeure().format(DateTimeFormatter.ofPattern("HH:mm")))
-        );
-
-        colPatientAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getPatient().getPrenom() + " " + cellData.getValue().getPatient().getNom())
-        );
-
-        colMotifAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getMotif())
-        );
-
-        colStatutAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getStatut().getLabel())
-        );
-
-        // Style du statut avec couleur
-        colStatutAccueil.setCellFactory(column -> new TableCell<RendezVous, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(item);
-                    RendezVous rdv = getTableView().getItems().get(getIndex());
-                    setStyle("-fx-background-color: " + rdv.getStatut().getCouleur() + "; " +
-                             "-fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center;");
-                }
-            }
-        });
-        
      // === Configuration du tableau Historique Patients ===
         colNumSocial.setCellValueFactory(new PropertyValueFactory<>("numSocial"));
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
@@ -189,7 +143,8 @@ public class MedecinDashboardController implements Initializable {
                     "-fx-text-fill: white; " +
                     "-fx-font-weight: bold; " +
                     "-fx-padding: 8 20; " +
-                    "-fx-background-radius: 6;"
+                    "-fx-background-radius: 6;" + 
+                    "-fx-cursor: HAND;"
                 );
                 btnDossier.setOnAction(e -> {
                     Patient patient = getTableView().getItems().get(getIndex());
@@ -207,44 +162,11 @@ public class MedecinDashboardController implements Initializable {
         // Données fictives patients pour le médecin
         ObservableList<Patient> patientsMed = FXCollections.observableArrayList();
         patientsMed.addAll(
-            new Patient("123456", "Karim", "Benali", "01/01/1980", "0600000000", "M", "CIN123", "Casablanca"),
-            new Patient("789012", "Sara", "Zouhair", "15/05/1995", "0611111111", "F", "CIN456", "Rabat"),
-            new Patient("555666", "Ahmed", "Lahlou", "10/10/1988", "0622222222", "M", "CIN789", "Marrakech")
+            new Patient("123456", "Karim", "Benali", "01/01/1980", "0600000000", "CIN123", "M", "Casablanca"),
+            new Patient("789012", "Sara", "Zouhair", "15/05/1995", "0611111111", "CIN456", "F", "Rabat"),
+            new Patient("555666", "Ahmed", "Lahlou", "10/10/1988", "0622222222", "CIN789", "M", "Marrakech")
         );
         tablePatientsMed.setItems(patientsMed);
-
-        // === Tableau Accueil : pas de colonne Action ===
-        colNumAccueil.setCellValueFactory(cellData -> {
-            int index = tableConsultationsJourAcceuil.getItems().indexOf(cellData.getValue()) + 1;
-            return new SimpleStringProperty(String.valueOf(index));
-        });
-        colHeureAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getHeure().format(DateTimeFormatter.ofPattern("HH:mm")))
-        );
-        colPatientAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getPatient().getPrenom() + " " + cellData.getValue().getPatient().getNom())
-        );
-        colMotifAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getMotif())
-        );
-        colStatutAccueil.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getStatut().getLabel())
-        );
-        colStatutAccueil.setCellFactory(column -> new TableCell<RendezVous, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(item);
-                    RendezVous rdv = getTableView().getItems().get(getIndex());
-                    setStyle("-fx-background-color: " + rdv.getStatut().getCouleur() + "; " +
-                             "-fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center;");
-                }
-            }
-        });
     }
 
     // ==================== NAVIGATION SIDEBAR ====================
@@ -280,26 +202,13 @@ public class MedecinDashboardController implements Initializable {
 
     private void highlightButton(Button btn) {
         resetSidebarStyle();
-        btn.setStyle("-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
+        btn.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
     }
 
     // ==================== RAFRAÎCHISSEMENT ====================
     private void rafraichirTout() {
-        rafraichirAccueil();
         rafraichirPlanning();
         chargerGraphiqueSemaine();
-    }
-
-    private void rafraichirAccueil() {
-        LocalDate aujourdHui = LocalDate.now();
-        ObservableList<RendezVous> rdvAujourdHui = FXCollections.observableArrayList();
-        for (RendezVous rdv : listeRDV) {
-            if (rdv.getDate().equals(aujourdHui) && rdv.getDocteur().equals(medecinConnecte)) {
-                rdvAujourdHui.add(rdv);
-            }
-        }
-        rdvAujourdHui.sort((a, b) -> a.getHeure().compareTo(b.getHeure()));
-        tableConsultationsJourAcceuil.setItems(rdvAujourdHui);
     }
 
     private void chargerGraphiqueSemaine() {
@@ -536,22 +445,28 @@ public class MedecinDashboardController implements Initializable {
     }
     
     private void ouvrirModifierStatut(RendezVous rdv) {
-    	try {
+        try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/fxml/modifier_statut_rdv.fxml"));
             Parent root = loader.load();
 
             ModifierStatutRDVController controller = loader.getController();
-            controller.setData(rdv, this);
+
+            // on passe le RDV + une action à exécuter après sauvegarde/suppression
+            controller.setData(rdv, () -> {
+                // Cette lambda s'exécute quand on sauvegarde ou supprime
+                rafraichirPlanning();
+                chargerGraphiqueSemaine();
+            });
 
             Stage stage = new Stage();
-            stage.setTitle("Modifier le statut");
+            stage.setTitle("Modifier le statut du RDV");
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(tabPaneMain.getScene().getWindow());
             stage.setResizable(false);
             stage.showAndWait();
 
-            rafraichirPlanning(); // au cas où annulé
+            // Plus besoin de rafraichir ici => c'est fait dans la lambda ci-dessus
 
         } catch (IOException e) {
             e.printStackTrace();
