@@ -19,15 +19,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Control;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -37,16 +34,30 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ma.vitadesk.model.Consultation;
+import ma.vitadesk.model.ConsultationDuJour;
 import ma.vitadesk.model.Docteur;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
-import ma.vitadesk.model.Consultation;
-import ma.vitadesk.model.ConsultationDuJour;
-import ma.vitadesk.model.RendezVous;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.chart.BarChart;
+import javafx.scene.image.WritableImage;
+import javafx.stage.FileChooser;
 
 public class MedecinDashboardController implements Initializable {
 
@@ -486,8 +497,8 @@ public class MedecinDashboardController implements Initializable {
             Parent root = loader.load();
 
             DossierMedicalController controller = loader.getController();
-            controller.afficherDossier(patient);
-
+            controller.afficherDossier(patient, medecinConnecte); // passe le médecin connecté
+            
             Stage stage = new Stage();
             stage.setTitle("Dossier Médical - " + patient.getNom() + " " + patient.getPrenom());
             stage.setScene(new Scene(root));
@@ -589,16 +600,14 @@ public class MedecinDashboardController implements Initializable {
     
     // Méthode appelée après l'enregistrement d'une consultation
     public void ajouterConsultation(RendezVous rdv, Consultation consultation) {
-        // Marquer le RDV comme effectué
         rdv.setStatut(RendezVous.Statut.EFFECTUE);
         
-        // Rafraîchir les vues
+        // Ajouter la consultation au patient
+        rdv.getPatient().ajouterConsultation(consultation);
+        
         rafraichirPlanning();
         chargerGraphiqueSemaine();
         chargerConsultationsDuJour();
-        
-        // Ici, vous pourriez aussi enregistrer la consultation dans une base de données
-        // ou l'ajouter à une liste de consultations du patient
     }
     
     // Méthode pour ouvrir la fenêtre d'ajout de RDV
@@ -633,6 +642,99 @@ public class MedecinDashboardController implements Initializable {
     // Retire la bordure d'erreur (retour au style normal)
     private void clearErrorStyle(Control control) {
         control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;"); // ou tu peux définir un style normal si tu veux
+    }
+    
+    @FXML
+    private void exporterRapportPDF() {
+        try {
+            // 1. Prendre des snapshots des graphiques
+            WritableImage barImage = barRdvSemaineMed.snapshot(new SnapshotParameters(), null);
+
+            ByteArrayOutputStream baosBar = new ByteArrayOutputStream();
+            ImageIO.write(SwingFXUtils.fromFXImage(barImage, null), "png", baosBar);
+
+            // 2. Créer le PDF
+            PDDocument document = new PDDocument();
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+            // === TITRE ===
+            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 24);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(50, 780);
+            contentStream.showText("Rapport Statistiques - Dr. " + medecinConnecte.getPrenom() + " " + medecinConnecte.getNom());
+            contentStream.endText();
+
+            // === DATE ===
+            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 14);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(50, 750);
+            contentStream.showText("Généré le : " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            contentStream.endText();
+
+            // === STATISTIQUES TEXTUELLES ===
+            long totalRDV = listeRDV.stream()
+                    .filter(r -> r.getDocteur().equals(medecinConnecte))
+                    .count();
+
+            long rdvEffectues = listeRDV.stream()
+                    .filter(r -> r.getDocteur().equals(medecinConnecte) && r.getStatut() == RendezVous.Statut.EFFECTUE)
+                    .count();
+
+            long rdvPrevus = listeRDV.stream()
+                    .filter(r -> r.getDocteur().equals(medecinConnecte) && r.getStatut() == RendezVous.Statut.PREVU)
+                    .count();
+
+            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 16);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(50, 710);
+            contentStream.showText("Résumé d'activité");
+            contentStream.endText();
+
+            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 14);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(50, 680);
+            contentStream.showText("Total rendez-vous : " + totalRDV);
+            contentStream.newLineAtOffset(0, -25);
+            contentStream.showText("Consultations effectuées : " + rdvEffectues);
+            contentStream.newLineAtOffset(0, -25);
+            contentStream.showText("Rendez-vous prévus : " + rdvPrevus);
+            contentStream.endText();
+
+            // === GRAPHIQUE SEMAINE ===
+            PDImageXObject pdBarImage = PDImageXObject.createFromByteArray(document, baosBar.toByteArray(), "bar.png");
+            contentStream.drawImage(pdBarImage, 50, 400, 400, 300);
+
+            contentStream.close();
+
+            // === SAUVEGARDER ===
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Exporter le rapport");
+            fileChooser.setInitialFileName("Rapport_" + medecinConnecte.getNom() + "_" + LocalDate.now() + ".pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+
+            File file = fileChooser.showSaveDialog(tabPaneMain.getScene().getWindow());
+
+            if (file != null) {
+                document.save(file);
+                document.close();
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Succès");
+                alert.setContentText("Rapport exporté avec succès !\nFichier : " + file.getName());
+                alert.show();
+            } else {
+                document.close();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Erreur lors de l'export PDF : " + e.getMessage());
+            alert.show();
+        }
     }
     
 }

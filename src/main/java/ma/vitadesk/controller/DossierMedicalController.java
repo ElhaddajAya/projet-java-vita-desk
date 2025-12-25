@@ -1,26 +1,29 @@
 package ma.vitadesk.controller;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-
 import java.io.File;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
+import javafx.util.converter.DoubleStringConverter;
 import ma.vitadesk.model.Consultation;
+import ma.vitadesk.model.Docteur;
 import ma.vitadesk.model.Patient;
 
 public class DossierMedicalController {
@@ -40,21 +43,45 @@ public class DossierMedicalController {
     @FXML private TableColumn<Consultation, String> colObservations;
     @FXML private TableColumn<Consultation, Double> colPrix;
 
+    @FXML private Button btnExporterDossierMedical;
+
     private Patient patient;
-    private ObservableList<Consultation> consultations = FXCollections.observableArrayList();
+    private Docteur medecinConnecte; // null si secrétaire
 
-    public void afficherDossier(Patient patient) {
+    public void afficherDossier(Patient patient, Docteur medecinConnecte) {
         this.patient = patient;
+        this.medecinConnecte = medecinConnecte;
 
-        // Infos patient
+        // === Infos patient ===
         lblPatientNom.setText(patient.getNom() + " " + patient.getPrenom());
         lblDateNaissance.setText(patient.getDateNaissance());
         lblSexe.setText(patient.getSexe());
-        lblGroupeSanguin.setText("O+"); // à remplir depuis la base plus tard
-        lblAllergies.setText("Pénicilline");
-        lblAntecedents.setText("Aucun");
+        lblGroupeSanguin.setText("-");
+        lblAllergies.setText("-");
+        lblAntecedents.setText("-");
 
-        // Liaison colonnes
+        // === Charger les consultations du patient ===
+        ObservableList<Consultation> consultations = patient.getConsultations();
+
+        // Filtrer si c'est un médecin
+        if (medecinConnecte != null) {
+            String nomMedecin = "Dr. " + medecinConnecte.getPrenom() + " " + medecinConnecte.getNom();
+            ObservableList<Consultation> filtres = FXCollections.observableArrayList();
+            for (Consultation c : consultations) {
+                if (c.getMedecin().equals(nomMedecin)) {
+                    filtres.add(c);
+                }
+            }
+            tableConsultations.setItems(filtres);
+        } else {
+            tableConsultations.setItems(consultations);
+        }
+
+        configurerColonnes();
+        configurerEditionSelonRole();
+    }
+
+    private void configurerColonnes() {
         colDateConsult.setCellValueFactory(new PropertyValueFactory<>("date"));
         colMedecin.setCellValueFactory(new PropertyValueFactory<>("medecin"));
         colDiagnostic.setCellValueFactory(new PropertyValueFactory<>("diagnostic"));
@@ -62,14 +89,32 @@ public class DossierMedicalController {
         colObservations.setCellValueFactory(new PropertyValueFactory<>("observations"));
         colPrix.setCellValueFactory(new PropertyValueFactory<>("prixConsultation"));
 
-        // Données fictives pour test
-        ObservableList<Consultation> consultations = FXCollections.observableArrayList(
-            new Consultation("10/11/2025", "Dr. Ahmadi", "Grippe", "Paracétamol 3x/jour", "Repos recommandé", 300.0),
-            new Consultation("15/09/2025", "Dr. Fatima", "Contrôle annuel", "Tout est normal", "Vaccin rappel fait", 300.0),
-            new Consultation("20/06/2025", "Dr. Karim", "Douleur dentaire", "Antibiotiques + antidouleur", "Rdv dentiste recommandé", 350.0)
-        );
+        // Masquer colonne médecin si c'est le médecin connecté
+        colMedecin.setVisible(medecinConnecte == null);
+    }
 
-        tableConsultations.setItems(consultations);
+    private void configurerEditionSelonRole() {
+        if (medecinConnecte != null) {
+            // === MODE MÉDECIN : édition activée ===
+            tableConsultations.setEditable(true);
+
+            // Activer l'édition sur chaque colonne
+            colDiagnostic.setCellFactory(TextFieldTableCell.forTableColumn());
+            colDiagnostic.setOnEditCommit(event -> event.getRowValue().setDiagnostic(event.getNewValue()));
+
+            colTraitement.setCellFactory(TextFieldTableCell.forTableColumn());
+            colTraitement.setOnEditCommit(event -> event.getRowValue().setTraitement(event.getNewValue()));
+
+            colObservations.setCellFactory(TextFieldTableCell.forTableColumn());
+            colObservations.setOnEditCommit(event -> event.getRowValue().setObservations(event.getNewValue()));
+
+            colPrix.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+            colPrix.setOnEditCommit(event -> event.getRowValue().setPrixConsultation(event.getNewValue()));
+
+        } else {
+            // === MODE SECRÉTAIRE : lecture seule ===
+            tableConsultations.setEditable(false);
+        }
     }
     
     @FXML
@@ -109,7 +154,7 @@ public class DossierMedicalController {
             // Liste des consultations
             content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 12);
             int y = 650;
-            for (Consultation c : consultations) {
+            for (Consultation c : tableConsultations.getItems()) {
                 content.beginText();
                 content.newLineAtOffset(50, y);
                 content.showText("Date : " + c.getDate() + " | Médecin : " + c.getMedecin());

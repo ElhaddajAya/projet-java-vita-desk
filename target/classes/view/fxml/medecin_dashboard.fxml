@@ -126,9 +126,9 @@
       </AnchorPane>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" pannable="true" prefHeight="728.0" prefWidth="1019.0" style="-fx-background-color: white; -fx-border-width: 0.1px; -fx-border-color: black;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+      <ScrollPane fitToWidth="true" pannable="true" prefHeight="728.0" prefWidth="1019.0" style="-fx-background-color: white; -fx-border-width: 0.1px; -fx-border-color: black;" vvalue="1.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
          <content>
-            <TabPane fx:id="tabPaneMain" prefHeight="904.0" prefWidth="1003.0" style="-fx-tab-min-height: 0; -fx-tab-max-height: 0; -fx-background-color: white;" stylesheets="@../css/style.css" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="tabPaneMain" prefHeight="978.0" prefWidth="1003.0" style="-fx-tab-min-height: 0; -fx-tab-max-height: 0; -fx-background-color: white;" stylesheets="@../css/style.css" tabClosingPolicy="UNAVAILABLE">
                <tabs>
                   <Tab fx:id="tabAccueil" closable="false" text="Acceuil">
                      <content>
@@ -359,6 +359,18 @@
                                     </BarChart>
                                  </children>
                               </HBox>
+                              <VBox alignment="CENTER_RIGHT" prefHeight="43.0" prefWidth="923.0">
+                                 <children>
+                                    <Button mnemonicParsing="false" onAction="#exporterRapportPDF" prefHeight="48.0" prefWidth="143.0" style="-fx-background-color: #28a745; -fx-background-radius: 6;" text="Exporter Rapport" textFill="WHITE">
+                                       <font>
+                                          <Font name="System Bold" size="13.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                    </Button>
+                                 </children>
+                              </VBox>
                            </children>
                         </VBox>
                      </content>

@@ -1,9 +1,11 @@
 package ma.vitadesk.model;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class Patient {
-    
+    	
     private final SimpleStringProperty numSocial = new SimpleStringProperty();
     private final SimpleStringProperty nom = new SimpleStringProperty();
     private final SimpleStringProperty prenom = new SimpleStringProperty();
@@ -12,6 +14,7 @@ public class Patient {
     private final SimpleStringProperty cin = new SimpleStringProperty();
     private final SimpleStringProperty sexe = new SimpleStringProperty();
     private final SimpleStringProperty adresse = new SimpleStringProperty();
+	private final ObservableList<Consultation> consultations = FXCollections.observableArrayList();
 
     public Patient(String numSocial, String nom, String prenom, String dateNaissance, String telephone, String cin, String sexe, String adresse) {
         this.numSocial.set(numSocial);
@@ -33,6 +36,9 @@ public class Patient {
     public SimpleStringProperty cinProperty() { return cin; }
     public SimpleStringProperty sexeProperty() { return sexe; }
     public SimpleStringProperty adresseProperty() { return adresse; }
+    public ObservableList<Consultation> getConsultations() {
+        return consultations;
+    }
 
     // Getters classiques
     public String getNumSocial() { return numSocial.get(); }
@@ -55,4 +61,8 @@ public class Patient {
     public void setCin(String cin) { this.cin.set(cin); }
     public void setSexe(String sexe) { this.sexe.set(sexe); }
     public void setAdresse(String adresse) { this.adresse.set(adresse); }
+    
+    public void ajouterConsultation(Consultation consultation) {
+        consultations.add(consultation);
+    }
 }

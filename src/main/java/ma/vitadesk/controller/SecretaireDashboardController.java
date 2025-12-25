@@ -108,9 +108,6 @@ public class SecretaireDashboardController implements Initializable {
 	@FXML private TableColumn<Patient, String> colActions;
 	@FXML private Button btnSupprimerPatient; // Boutton au-dessous du TableView
 	@FXML private Button btnNouveauPatient; // le bouton "Nouveau Patient"
-	
-    // Boutons sidebar (pour mise en surbrillance)
-    @FXML private Button btnAcceuil, btnPatients, btnDocteurs, btnRDV, btnDeconnexion;
 
     private ObservableList<Patient> patients = FXCollections.observableArrayList();
 
@@ -200,6 +197,10 @@ public class SecretaireDashboardController implements Initializable {
 	
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Accueil sélectionné au démarrage
+        tabPaneMainSec.getSelectionModel().select(tabAccueilSec);
+        highlightButton(btnAccueilSec);
+
     		/************** Acceuil ***********/
         // Initialisation du BarChart : RDV par jour cette semaine
         XYChart.Series<String, Number> series = new XYChart.Series<>();
@@ -468,12 +469,16 @@ public class SecretaireDashboardController implements Initializable {
     }
 
     private void resetSidebarStyleSec() {
-        String styleNormal = "-fx-background-color: #EFF2F5; -fx-border-width: 0.1px; -fx-border-color: black;";
-        btnAccueilSec.setStyle(styleNormal);
-        btnDocteursSec.setStyle(styleNormal);
-        btnPatientsSec.setStyle(styleNormal);
-        btnRendezVousSec.setStyle(styleNormal);
-        btnDeconnexionSec.setStyle(styleNormal);
+        btnAccueilSec.setStyle("-fx-background-color: #EFF2F5; -fx-border-width: 0.1px; -fx-border-color: black;");
+        btnPatientsSec.setStyle("-fx-background-color: #EFF2F5; -fx-border-width: 0.1px; -fx-border-color: black;");
+        btnDocteursSec.setStyle("-fx-background-color: #EFF2F5; -fx-border-width: 0.1px; -fx-border-color: black;");
+        btnRendezVousSec.setStyle("-fx-background-color: #EFF2F5; -fx-border-width: 0.1px; -fx-border-color: black;");
+        btnDeconnexionSec.setStyle("-fx-background-color: #EFF2F5; -fx-border-width: 0.1px; -fx-border-color: black;");
+    }
+    
+    private void highlightButton(Button btn) {
+	    	resetSidebarStyleSec();
+	    	btn.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
     }
     
     private void deconnecter() {
@@ -572,8 +577,8 @@ public class SecretaireDashboardController implements Initializable {
 
             // Crée une nouvelle fenêtre (Stage) pour le dossier médical
             DossierMedicalController controller = loader.getController();
-            controller.afficherDossier(patient); // on passe le patient
-
+            controller.afficherDossier(patient, null); // null = secrétaire
+            
             Stage stage = new Stage();
             stage.setTitle("Dossier Médical - " + patient.getNom() + " " + patient.getPrenom());
             stage.setScene(new Scene(root));
