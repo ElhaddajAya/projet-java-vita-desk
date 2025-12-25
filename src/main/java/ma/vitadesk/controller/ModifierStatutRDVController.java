@@ -19,11 +19,11 @@ public class ModifierStatutRDVController {
     private RendezVous rdv;
     private SecretaireDashboardController dashboardControllerSec;
     private MedecinDashboardController dashboardControllerMed;
-    private Runnable onUpdate;
     
     public void setData(RendezVous rdv, SecretaireDashboardController dashboardControllerSec) {
         this.rdv = rdv;
         this.dashboardControllerSec = dashboardControllerSec;
+        this.dashboardControllerMed = null;
 
         // Afficher les infos
         lblPatient.setText("Patient : " + rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
@@ -40,7 +40,14 @@ public class ModifierStatutRDVController {
         RendezVous.Statut nouveauStatut = comboStatut.getValue();
         if (nouveauStatut != null) {
             rdv.setStatut(nouveauStatut);
-            dashboardControllerSec.rafraichirPlanning(); // met à jour la couleur
+            
+            // Utiliser le bon contrôleur selon lequel est défini
+            if (dashboardControllerSec != null) {
+                dashboardControllerSec.rafraichirPlanning();
+            } else if (dashboardControllerMed != null) {
+                dashboardControllerMed.rafraichirPlanning();
+                dashboardControllerMed.chargerGraphiqueSemaine();
+            }
         }
         
         fermer();
@@ -58,8 +65,12 @@ public class ModifierStatutRDVController {
         );
 
         if (confirmation.showAndWait().get() == ButtonType.OK) {
-            // Supprimer du planning
-            dashboardControllerSec.supprimerRDV(rdv);
+            // Supprimer réellement du planning selon le contrôleur disponible
+            if (dashboardControllerSec != null) {
+                dashboardControllerSec.supprimerRDV(rdv);
+            } else if (dashboardControllerMed != null) {
+                dashboardControllerMed.supprimerRDV(rdv);
+            }
             fermer();
         }
     }
@@ -74,23 +85,16 @@ public class ModifierStatutRDVController {
         stage.close();
     }
 
-    public void setData(RendezVous rdv, Runnable onUpdate) {
+    public void setData(RendezVous rdv, MedecinDashboardController dashboardControllerMed) {
         this.rdv = rdv;
-        this.onUpdate = onUpdate;
+        this.dashboardControllerMed = dashboardControllerMed;
+        this.dashboardControllerSec = null;
 
-        lblPatient.setText(rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
-        lblDocteur.setText("Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom());
+        lblPatient.setText("Patient : " + rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
+        lblDocteur.setText("Docteur : Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom());
         lblHeure.setText(rdv.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " à " + rdv.getHeure().format(DateTimeFormatter.ofPattern("HH:mm")));
 
         comboStatut.getItems().setAll(RendezVous.Statut.values());
         comboStatut.setValue(rdv.getStatut());
     }
-
-	public MedecinDashboardController getDashboardControllerMed() {
-		return dashboardControllerMed;
-	}
-
-	public void setDashboardControllerMed(MedecinDashboardController dashboardControllerMed) {
-		this.dashboardControllerMed = dashboardControllerMed;
-	}
 }

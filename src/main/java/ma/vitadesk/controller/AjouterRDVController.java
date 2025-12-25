@@ -33,10 +33,17 @@ public class AjouterRDVController implements Initializable {
     private ObservableList<Patient> patients = FXCollections.observableArrayList();
     private ObservableList<Docteur> docteurs = FXCollections.observableArrayList();
     
+    private Docteur medecinConnecte; // Pour le mode médecin
+    
     private SecretaireDashboardController dashboardController;
+    private MedecinDashboardController dashboardControllerMed;
     
     public void setDashboardController(SecretaireDashboardController controller) {
         this.dashboardController = controller;
+    }
+    
+    public void setDashboardControllerMed(MedecinDashboardController controller) {
+        this.dashboardControllerMed = controller;
     }
     
 	// Méthode appelée depuis le dashboard pour passer les listes
@@ -45,6 +52,17 @@ public class AjouterRDVController implements Initializable {
         this.docteurs = docteurs;
         remplirComboPatients();
         remplirComboDocteurs();
+    }
+    
+    public void initialiserPourMedecin(ObservableList<Patient> patients, Docteur medecinConnecte) {
+        this.patients = patients;
+        this.medecinConnecte = medecinConnecte;
+        remplirComboPatients();
+        
+        // Désactiver et pré-remplir le ComboBox docteur
+        comboDocteur.setDisable(true);
+        comboDocteur.setValue("Dr. " + medecinConnecte.getPrenom() + " " + medecinConnecte.getNom() + " - " + medecinConnecte.getSpecialite());
+        comboDocteur.setStyle("-fx-opacity: 1.0;"); // Garder visible même si désactivé
     }
 
     @Override
@@ -104,6 +122,7 @@ public class AjouterRDVController implements Initializable {
         });
     }
 
+
     // === Enregistrer ===
     @FXML
     private void enregistrer() {
@@ -116,13 +135,25 @@ public class AjouterRDVController implements Initializable {
         if (datePickerRDV.getValue() == null) { setErrorStyle(datePickerRDV); hasError = true; }
         if (comboHeure.getValue() == null) { setErrorStyle(comboHeure); hasError = true; }
         if (comboPatient.getValue() == null) { setErrorStyle(comboPatient); hasError = true; }
-        if (comboDocteur.getValue() == null) { setErrorStyle(comboDocteur); hasError = true; }
+        
+        // Ne valider comboDocteur que si on n'est pas en mode médecin
+        if (medecinConnecte == null && comboDocteur.getValue() == null) { 
+            setErrorStyle(comboDocteur); 
+            hasError = true; 
+        }
 
         if (hasError) return;
 
         // Récupérer les objets à partir du texte sélectionné
         Patient patient = trouverPatient(comboPatient.getValue());
-        Docteur docteur = trouverDocteur(comboDocteur.getValue());
+        Docteur docteur;
+        
+        // Si mode médecin, utiliser le médecin connecté
+        if (medecinConnecte != null) {
+            docteur = medecinConnecte;
+        } else {
+            docteur = trouverDocteur(comboDocteur.getValue());
+        }
 
         if (patient == null || docteur == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -140,7 +171,13 @@ public class AjouterRDVController implements Initializable {
             RendezVous.Statut.PREVU
         );
 
-        dashboardController.ajouterRDV(rdv);
+        // Appeler le bon dashboard controller
+        if (dashboardController != null) {
+            dashboardController.ajouterRDV(rdv);
+        } else if (dashboardControllerMed != null) {
+            dashboardControllerMed.ajouterRDV(rdv);
+        }
+        
         fermer();
     }
     

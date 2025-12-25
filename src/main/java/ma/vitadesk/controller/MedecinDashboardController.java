@@ -24,6 +24,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Control;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -80,6 +81,7 @@ public class MedecinDashboardController implements Initializable {
     // ==================== PLANNING ====================
     @FXML private DatePicker datePickerPlanningMed;
     @FXML private Label selectedDatePlanningMed;
+    @FXML private Label todayConsultationsDateMed;
 
     // Toutes les cellules du planning (avec "Med")
     @FXML private VBox cellLundi0800Med, cellMardi0800Med, cellMercredi0800Med, cellJeudi0800Med, cellVendredi0800Med, cellSamedi0800Med;
@@ -95,6 +97,7 @@ public class MedecinDashboardController implements Initializable {
 
     // ==================== DONNÉES ====================
     private ObservableList<RendezVous> listeRDV = FXCollections.observableArrayList();
+    private ObservableList<Patient> listePatients = FXCollections.observableArrayList();
     private Docteur medecinConnecte;
 
     // ==================== PASSAGE DU MÉDECIN ====================
@@ -112,7 +115,8 @@ public class MedecinDashboardController implements Initializable {
         // Date du jour
         datePickerPlanningMed.setValue(LocalDate.now());
         selectedDatePlanningMed.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-
+        todayConsultationsDateMed.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        
         // Accueil sélectionné au démarrage
         tabPaneMain.getSelectionModel().select(tabAccueil);
         highlightButton(btnAccueil);
@@ -211,7 +215,7 @@ public class MedecinDashboardController implements Initializable {
         chargerGraphiqueSemaine();
     }
 
-    private void chargerGraphiqueSemaine() {
+    public void chargerGraphiqueSemaine() {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("RDV");
 
@@ -230,7 +234,7 @@ public class MedecinDashboardController implements Initializable {
         barRdvSemaineMed.getData().add(series);
     }
 
-    private void rafraichirPlanning() {
+    public void rafraichirPlanning() {
         viderToutesLesCellules();
         LocalDate date = datePickerPlanningMed.getValue();
         if (date == null) return;
@@ -387,6 +391,9 @@ public class MedecinDashboardController implements Initializable {
         Patient p2 = new Patient("789012", "ZOUHAIR", "Sara", "15/05/1995", "0611111111", "CIN456", "F", "Rabat");
         Patient p3 = new Patient("555666", "LAHLOU", "Ahmed", "10/10/1988", "0622222222", "CIN789", "M", "Marrakech");
 
+        // Ajouter à la liste globale des patients (pour la ComboBox)
+        listePatients.addAll(p1, p2, p3);
+        
         // RDV aujourd'hui
         listeRDV.add(new RendezVous(LocalDate.now(), LocalTime.of(9, 0), p1, medecinConnecte, "Consultation générale", RendezVous.Statut.PREVU));
         listeRDV.add(new RendezVous(LocalDate.now(), LocalTime.of(10, 30), p2, medecinConnecte, "Contrôle annuel", RendezVous.Statut.PREVU));
@@ -451,12 +458,8 @@ public class MedecinDashboardController implements Initializable {
 
             ModifierStatutRDVController controller = loader.getController();
 
-            // on passe le RDV + une action à exécuter après sauvegarde/suppression
-            controller.setData(rdv, () -> {
-                // Cette lambda s'exécute quand on sauvegarde ou supprime
-                rafraichirPlanning();
-                chargerGraphiqueSemaine();
-            });
+            // on passe le RDV + le contrôleur médecin pour permettre la suppression réelle
+            controller.setData(rdv, this);
 
             Stage stage = new Stage();
             stage.setTitle("Modifier le statut du RDV");
@@ -466,11 +469,61 @@ public class MedecinDashboardController implements Initializable {
             stage.setResizable(false);
             stage.showAndWait();
 
-            // Plus besoin de rafraichir ici => c'est fait dans la lambda ci-dessus
+            // Rafraîchir après fermeture
+            rafraichirPlanning();
+            chargerGraphiqueSemaine();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    // Méthode pour supprimer un RDV
+    public void supprimerRDV(RendezVous rdv) {
+        listeRDV.remove(rdv);
+        rafraichirPlanning();
+        chargerGraphiqueSemaine();
+    }
+    
+    // Méthode pour ajouter un RDV
+    public void ajouterRDV(RendezVous rdv) {
+        listeRDV.add(rdv);
+        rafraichirPlanning();
+        chargerGraphiqueSemaine();
+    }
+    
+    // Méthode pour ouvrir la fenêtre d'ajout de RDV
+    @FXML
+    private void ouvrirAjouterRDV() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/fxml/ajouter_rdv.fxml"));
+            Parent root = loader.load();
+
+            AjouterRDVController controller = loader.getController();
+            controller.setDashboardControllerMed(this);
+            controller.initialiserPourMedecin(listePatients, medecinConnecte);
+
+            Stage stage = new Stage();
+            stage.setTitle("Ajouter un Rendez-vous");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(tabPaneMain.getScene().getWindow());
+            stage.setResizable(false);
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Applique une bordure rouge à un TextField ou TextArea
+    private void setErrorStyle(Control control) {
+        control.setStyle("-fx-background-color: white; -fx-border-color: red; -fx-border-width: 0.3px; -fx-border-radius: 3px; -fx-font-size: 13px;");
+    }
+
+    // Retire la bordure d'erreur (retour au style normal)
+    private void clearErrorStyle(Control control) {
+        control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;"); // ou tu peux définir un style normal si tu veux
     }
     
 }
