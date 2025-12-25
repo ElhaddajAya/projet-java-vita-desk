@@ -71,7 +71,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import ma.vitadesk.model.Docteur;
+import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
 
@@ -112,16 +112,16 @@ public class SecretaireDashboardController implements Initializable {
     private ObservableList<Patient> patients = FXCollections.observableArrayList();
 
 	// Docteurs
-	@FXML private TableView<Docteur> tableDocteurs;
-	@FXML private TableColumn<Docteur, String> colDocNom;
-	@FXML private TableColumn<Docteur, String> colDocPrenom;
-	@FXML private TableColumn<Docteur, String> colDocSpecialite;
-	@FXML private TableColumn<Docteur, String> colDocTelephone;
-	@FXML private TableColumn<Docteur, String> colDocEmail;
+	@FXML private TableView<Medecin> tableDocteurs;
+	@FXML private TableColumn<Medecin, String> colDocNom;
+	@FXML private TableColumn<Medecin, String> colDocPrenom;
+	@FXML private TableColumn<Medecin, String> colDocSpecialite;
+	@FXML private TableColumn<Medecin, String> colDocTelephone;
+	@FXML private TableColumn<Medecin, String> colDocEmail;
 	@FXML private Button btnSupprimerDocteur;
 	@FXML private Button btnNouveauDocteur; // le bouton dans le tab Docteurs
 	
-	private ObservableList<Docteur> docteurs = FXCollections.observableArrayList();	
+	private ObservableList<Medecin> medecins = FXCollections.observableArrayList();	
 
 	// Rendez-vouss
 	@FXML private DatePicker datePickerPlanning; // DatePicker pour choisir la date du planning
@@ -392,20 +392,20 @@ public class SecretaireDashboardController implements Initializable {
         
         
         /*********** Docteurs ***********/
-        // Liaison colonnes docteurs
+        // Liaison colonnes medecins
         colDocNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colDocPrenom.setCellValueFactory(new PropertyValueFactory<>("prenom"));
         colDocSpecialite.setCellValueFactory(new PropertyValueFactory<>("specialite"));
         colDocTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
         colDocEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        tableDocteurs.setItems(docteurs);
+        tableDocteurs.setItems(medecins);
 
         // Données fictives
-        docteurs.addAll(
-            new Docteur("Ahmadi", "Karim", "Généraliste", "0661234567", "k.ahmadi@clinic.ma"),
-            new Docteur("Fatima", "Zahra", "Pédiatre", "0678901234", "z.fatima@clinic.ma"),
-            new Docteur("Karim", "Mohamed", "Dentiste", "0654321098", "m.karim@clinic.ma")
+        medecins.addAll(
+            new Medecin("Ahmadi", "Karim", "Généraliste", "0661234567", "k.ahmadi@clinic.ma"),
+            new Medecin("Fatima", "Zahra", "Pédiatre", "0678901234", "z.fatima@clinic.ma"),
+            new Medecin("Karim", "Mohamed", "Dentiste", "0654321098", "m.karim@clinic.ma")
         );
         
         // Rendre la TableView éditable
@@ -594,10 +594,10 @@ public class SecretaireDashboardController implements Initializable {
         }
     }
     
-    // === Méthode pour supprimer plusieurs docteurs sélectionnés ===
+    // === Méthode pour supprimer plusieurs medecins sélectionnés ===
     @FXML
     private void supprimerDocteurs(ActionEvent event) {
-    		ObservableList<Docteur> selection = tableDocteurs.getSelectionModel().getSelectedItems();
+    		ObservableList<Medecin> selection = tableDocteurs.getSelectionModel().getSelectedItems();
 
         if (selection.isEmpty()) {
             return;
@@ -609,7 +609,7 @@ public class SecretaireDashboardController implements Initializable {
         alert.setContentText("Cette action est irréversible.");
 
         if (alert.showAndWait().get() == ButtonType.OK) {
-            docteurs.removeAll(selection);
+            medecins.removeAll(selection);
         }
     }
     
@@ -637,8 +637,8 @@ public class SecretaireDashboardController implements Initializable {
     }
 
     // Méthode appelée par le controller d'ajout
-    public void ajouterDocteur(Docteur docteur) {
-        docteurs.add(docteur);
+    public void ajouterDocteur(Medecin medecin) {
+        medecins.add(medecin);
     }
     
     // Méthode pour charger des RDV fictifs (que je vais supprimer plus tard)
@@ -648,7 +648,7 @@ public class SecretaireDashboardController implements Initializable {
             LocalDate.now(),                    // aujourd'hui
             LocalTime.of(8, 0),                 // 08:00
             patients.get(0),                    // premier patient de la liste
-            docteurs.get(0),                    // premier docteur
+            medecins.get(0),                    // premier docteur
             "Consultation générale",
             RendezVous.Statut.PREVU
         ));
@@ -657,7 +657,7 @@ public class SecretaireDashboardController implements Initializable {
             LocalDate.now(),
             LocalTime.of(8, 0),                  // même heure → 2 RDV au même créneau
             patients.get(1),
-            docteurs.get(1),
+            medecins.get(1),
             "Vaccin",
             RendezVous.Statut.PREVU
         ));
@@ -666,7 +666,7 @@ public class SecretaireDashboardController implements Initializable {
             LocalDate.now(),
             LocalTime.of(9, 30),
             patients.get(2),
-            docteurs.get(0),
+            medecins.get(0),
             "Contrôle annuel",
             RendezVous.Statut.EFFECTUE
         ));
@@ -675,7 +675,7 @@ public class SecretaireDashboardController implements Initializable {
             LocalDate.now(),
             LocalTime.of(10, 0),
             patients.get(3),
-            docteurs.get(1),
+            medecins.get(1),
             "Douleur dentaire",
             RendezVous.Statut.ANNULE
         ));
@@ -951,7 +951,7 @@ public class SecretaireDashboardController implements Initializable {
 
             AjouterRDVController controller = loader.getController();
             controller.setDashboardController(this);
-            controller.initialiserAvecListes(patients, docteurs);
+            controller.initialiserAvecListes(patients, medecins);
 
             Stage stage = new Stage();
             stage.setTitle("Nouveau Rendez-vous");
@@ -1040,7 +1040,7 @@ public class SecretaireDashboardController implements Initializable {
 
             // En-tête
             Row header = sheet.createRow(0);
-            String[] columns = {"Date", "Heure", "Patient", "Docteur", "Motif", "Statut"};
+            String[] columns = {"Date", "Heure", "Patient", "Medecin", "Motif", "Statut"};
             for (int i = 0; i < columns.length; i++) {
                 Cell cell = header.createCell(i);
                 cell.setCellValue(columns[i]);

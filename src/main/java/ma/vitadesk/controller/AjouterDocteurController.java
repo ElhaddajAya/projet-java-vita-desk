@@ -9,7 +9,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import ma.vitadesk.model.Docteur;
+import ma.vitadesk.model.Medecin;
 
 public class AjouterDocteurController implements Initializable {
 	@FXML private TextField txtNom;
@@ -79,7 +79,7 @@ public class AjouterDocteurController implements Initializable {
         }
 
         // Création du nouveau docteur
-        Docteur nouveauDocteur = new Docteur(
+        Medecin nouveauDocteur = new Medecin(
             txtNom.getText().trim().toUpperCase(),
             txtPrenom.getText().trim(),
             comboSpecialite.getValue(),

@@ -22,7 +22,7 @@ import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ma.vitadesk.model.Consultation;
-import ma.vitadesk.model.Docteur;
+import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
 

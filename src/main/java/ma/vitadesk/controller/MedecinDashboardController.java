@@ -39,7 +39,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ma.vitadesk.model.Consultation;
 import ma.vitadesk.model.ConsultationDuJour;
-import ma.vitadesk.model.Docteur;
+import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
 import java.io.ByteArrayOutputStream;
@@ -122,10 +122,10 @@ public class MedecinDashboardController implements Initializable {
     private ObservableList<RendezVous> listeRDV = FXCollections.observableArrayList();
     private ObservableList<Patient> listePatients = FXCollections.observableArrayList();
     private ObservableList<ConsultationDuJour> listeConsultationsJour = FXCollections.observableArrayList();
-    private Docteur medecinConnecte;
+    private Medecin medecinConnecte;
 
     // ==================== PASSAGE DU MÉDECIN ====================
-    public void setMedecin(Docteur medecin) {
+    public void setMedecin(Medecin medecin) {
         this.medecinConnecte = medecin;
         lblMedecinNom.setText("Dr. " + medecin.getPrenom() + " " + medecin.getNom());
         lblSpecialite.setText(medecin.getSpecialite());

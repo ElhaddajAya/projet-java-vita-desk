@@ -27,7 +27,7 @@ public class ModifierStatutRDVController {
 
         // Afficher les infos
         lblPatient.setText("Patient : " + rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
-        lblDocteur.setText("Docteur : Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom());
+        lblDocteur.setText("Medecin : Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom());
         lblHeure.setText("Heure : " + rdv.getHeure() + " le " + rdv.getDate());
 
         // ComboBox statuts
@@ -91,7 +91,7 @@ public class ModifierStatutRDVController {
         this.dashboardControllerSec = null;
 
         lblPatient.setText("Patient : " + rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom());
-        lblDocteur.setText("Docteur : Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom());
+        lblDocteur.setText("Medecin : Dr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom());
         lblHeure.setText(rdv.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " à " + rdv.getHeure().format(DateTimeFormatter.ofPattern("HH:mm")));
 
         comboStatut.getItems().setAll(RendezVous.Statut.values());

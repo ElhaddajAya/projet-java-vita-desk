@@ -111,7 +111,7 @@
                   <Font name="System Bold" size="20.0" />
                </font>
             </Label>
-            <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="839.0" layoutY="22.0" prefHeight="27.0" prefWidth="276.0" text="Bienvenue, Prénom" textAlignment="RIGHT">
+            <Label fx:id="lblMedecinNomBienvenue" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="722.0" layoutY="22.0" prefHeight="30.0" prefWidth="393.0" text="Bienvenue, Prénom" textAlignment="RIGHT">
                <font>
                   <Font name="System Bold" size="20.0" />
                </font>
@@ -126,7 +126,7 @@
       </AnchorPane>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" pannable="true" prefHeight="728.0" prefWidth="1019.0" style="-fx-background-color: white; -fx-border-width: 0.1px; -fx-border-color: black;" vvalue="1.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+      <ScrollPane fitToWidth="true" pannable="true" prefHeight="728.0" prefWidth="1019.0" style="-fx-background-color: white; -fx-border-width: 0.1px; -fx-border-color: black;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
          <content>
             <TabPane fx:id="tabPaneMain" prefHeight="978.0" prefWidth="1003.0" style="-fx-tab-min-height: 0; -fx-tab-max-height: 0; -fx-background-color: white;" stylesheets="@../css/style.css" tabClosingPolicy="UNAVAILABLE">
                <tabs>

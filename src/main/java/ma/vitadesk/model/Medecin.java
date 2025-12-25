@@ -2,18 +2,18 @@ package ma.vitadesk.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
-public class Docteur {
+public class Medecin {
 	private final SimpleStringProperty nom = new SimpleStringProperty();
     private final SimpleStringProperty prenom = new SimpleStringProperty();
     private final SimpleStringProperty specialite = new SimpleStringProperty();
     private final SimpleStringProperty telephone = new SimpleStringProperty();
     private final SimpleStringProperty email = new SimpleStringProperty();
     
-    public Docteur() {
+    public Medecin() {
     		super();
     }
     
-    public Docteur(String nom, String prenom, String specialite, String telephone, String email) {
+    public Medecin(String nom, String prenom, String specialite, String telephone, String email) {
         this.nom.set(nom);
         this.prenom.set(prenom);
         this.specialite.set(specialite);

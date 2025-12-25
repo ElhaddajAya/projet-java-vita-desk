@@ -23,7 +23,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
 import javafx.util.converter.DoubleStringConverter;
 import ma.vitadesk.model.Consultation;
-import ma.vitadesk.model.Docteur;
+import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 
 public class DossierMedicalController {
@@ -46,9 +46,9 @@ public class DossierMedicalController {
     @FXML private Button btnExporterDossierMedical;
 
     private Patient patient;
-    private Docteur medecinConnecte; // null si secrétaire
+    private Medecin medecinConnecte; // null si secrétaire
 
-    public void afficherDossier(Patient patient, Docteur medecinConnecte) {
+    public void afficherDossier(Patient patient, Medecin medecinConnecte) {
         this.patient = patient;
         this.medecinConnecte = medecinConnecte;
 

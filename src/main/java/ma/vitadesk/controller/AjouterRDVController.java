@@ -17,7 +17,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import ma.vitadesk.model.Docteur;
+import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
 
@@ -31,9 +31,9 @@ public class AjouterRDVController implements Initializable {
     
     // Listes reçues depuis le dashboard
     private ObservableList<Patient> patients = FXCollections.observableArrayList();
-    private ObservableList<Docteur> docteurs = FXCollections.observableArrayList();
+    private ObservableList<Medecin> medecins = FXCollections.observableArrayList();
     
-    private Docteur medecinConnecte; // Pour le mode médecin
+    private Medecin medecinConnecte; // Pour le mode médecin
     
     private SecretaireDashboardController dashboardController;
     private MedecinDashboardController dashboardControllerMed;
@@ -47,14 +47,14 @@ public class AjouterRDVController implements Initializable {
     }
     
 	// Méthode appelée depuis le dashboard pour passer les listes
-    public void initialiserAvecListes(ObservableList<Patient> patients, ObservableList<Docteur> docteurs) {
+    public void initialiserAvecListes(ObservableList<Patient> patients, ObservableList<Medecin> medecins) {
         this.patients = patients;
-        this.docteurs = docteurs;
+        this.medecins = medecins;
         remplirComboPatients();
         remplirComboDocteurs();
     }
     
-    public void initialiserPourMedecin(ObservableList<Patient> patients, Docteur medecinConnecte) {
+    public void initialiserPourMedecin(ObservableList<Patient> patients, Medecin medecinConnecte) {
         this.patients = patients;
         this.medecinConnecte = medecinConnecte;
         remplirComboPatients();
@@ -99,10 +99,10 @@ public class AjouterRDVController implements Initializable {
         });
     }
 
-    // === ComboBox Docteur avec recherche ===
+    // === ComboBox Medecin avec recherche ===
     private void remplirComboDocteurs() {
         ObservableList<String> docteurStrings = FXCollections.observableArrayList();
-        for (Docteur d : docteurs) {
+        for (Medecin d : medecins) {
             docteurStrings.add("Dr. " + d.getPrenom() + " " + d.getNom() + " - " + d.getSpecialite());
         }
 
@@ -146,16 +146,16 @@ public class AjouterRDVController implements Initializable {
 
         // Récupérer les objets à partir du texte sélectionné
         Patient patient = trouverPatient(comboPatient.getValue());
-        Docteur docteur;
+        Medecin medecin;
         
         // Si mode médecin, utiliser le médecin connecté
         if (medecinConnecte != null) {
-            docteur = medecinConnecte;
+            medecin = medecinConnecte;
         } else {
-            docteur = trouverDocteur(comboDocteur.getValue());
+            medecin = trouverDocteur(comboDocteur.getValue());
         }
 
-        if (patient == null || docteur == null) {
+        if (patient == null || medecin == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setContentText("Erreur interne : patient ou docteur non trouvé.");
             alert.show();
@@ -166,7 +166,7 @@ public class AjouterRDVController implements Initializable {
             datePickerRDV.getValue(),
             LocalTime.parse(comboHeure.getValue()),
             patient,
-            docteur,
+            medecin,
             txtMotif.getText().trim(),
             RendezVous.Statut.PREVU
         );
@@ -191,8 +191,8 @@ public class AjouterRDVController implements Initializable {
     }
 
     // Méthode pour rechercher le docteur depuis le nom/prénom saisie dans le ComboBox
-    private Docteur trouverDocteur(String texte) {
-        for (Docteur d : docteurs) {
+    private Medecin trouverDocteur(String texte) {
+        for (Medecin d : medecins) {
             String str = "Dr. " + d.getPrenom() + " " + d.getNom() + " - " + d.getSpecialite();
             if (str.equals(texte)) return d;
         }

@@ -3,7 +3,7 @@ package ma.vitadesk.controller;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import ma.vitadesk.model.Docteur;
+import ma.vitadesk.model.Medecin;
 import ma.vitadesk.util.DatabaseConnection;
 
 import java.io.IOException;
@@ -102,7 +102,7 @@ public class LoginController implements Initializable {
 	                    stage.show();
 	                } else if (role.equals("MEDECIN")) {
 	                    // Créer un médecin fictif et le passer au controller
-	                    Docteur medecinConnecte = new Docteur();
+	                    Medecin medecinConnecte = new Medecin();
 	                    medecinConnecte.setNom("ESSADI");
 	                    medecinConnecte.setPrenom("Alae");
 	                    medecinConnecte.setSpecialite("Généraliste");
