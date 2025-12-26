@@ -74,8 +74,11 @@ import javafx.stage.Stage;
 import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
+import ma.vitadesk.model.Utilisateur;
 
 public class SecretaireDashboardController implements Initializable {
+	@FXML private Label lblSecretaireNom;
+	@FXML private Label lblSecretaireBienvennue;
 	
 	// Acceuil
 	@FXML private BarChart<String, Number> barRdvSemaine;
@@ -193,6 +196,27 @@ public class SecretaireDashboardController implements Initializable {
 	
 	// Liste de tous les rendez-vous (plus tard depuis la base de données)
 	private ObservableList<RendezVous> tousLesRDV = FXCollections.observableArrayList();
+	
+	// Variable pour stocker l'utilisateur connecté
+	private Utilisateur utilisateurConnecte;
+	
+	/**
+	 * Méthode appelée par le LoginController pour passer les infos de l'utilisateur
+	 * On affiche ensuite ces infos dans l'interface
+	 */
+	public void setUtilisateur(Utilisateur utilisateur) {
+	    this.utilisateurConnecte = utilisateur;
+	    
+	    // Afficher le nom complet de la secrétaire dans le header
+	    if (utilisateur.getNom() != null && utilisateur.getPrenom() != null) {
+	        lblSecretaireNom.setText(utilisateur.getPrenom() + " " + utilisateur.getNom());
+	        lblSecretaireBienvennue.setText("Bienvenue, " + utilisateur.getPrenom());
+	    } else {
+	        // Si pas de nom/prénom en BDD, on affiche juste le login
+	        lblSecretaireNom.setText(utilisateur.getLogin());
+	        lblSecretaireBienvennue.setText("Bienvenue, " + utilisateur.getLogin());
+	    }
+	}
 	
     @Override
     public void initialize(URL location, ResourceBundle resources) {

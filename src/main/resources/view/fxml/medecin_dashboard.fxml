@@ -111,7 +111,7 @@
                   <Font name="System Bold" size="20.0" />
                </font>
             </Label>
-            <Label fx:id="lblMedecinNomBienvenue" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="722.0" layoutY="22.0" prefHeight="30.0" prefWidth="393.0" text="Bienvenue, Prénom" textAlignment="RIGHT">
+            <Label fx:id="lblMedecinBienvennue" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="722.0" layoutY="22.0" prefHeight="30.0" prefWidth="393.0" text="Bienvenue, Prénom" textAlignment="RIGHT">
                <font>
                   <Font name="System Bold" size="20.0" />
                </font>

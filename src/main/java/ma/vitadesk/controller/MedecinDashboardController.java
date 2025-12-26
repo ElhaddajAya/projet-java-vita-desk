@@ -73,6 +73,7 @@ public class MedecinDashboardController implements Initializable {
     // ==================== HEADER ====================
     @FXML private Label lblMedecinNom;
     @FXML private Label lblSpecialite;
+    @FXML private Label lblMedecinBienvennue;
 
     // ==================== TABS ====================
     @FXML private TabPane tabPaneMain;
@@ -129,12 +130,29 @@ public class MedecinDashboardController implements Initializable {
     // 	Variable pour stocker l'utilisateur connecté
     private Utilisateur utilisateurConnecte;
 
-    // ==================== PASSAGE DU MÉDECIN ====================
-    public void setMedecin(Medecin medecin) {
+    /**
+     * Méthode appelée par le LoginController pour passer les infos du médecin
+     * On crée un objet Medecin à partir de l'Utilisateur et on affiche les infos
+     */
+    public void setUtilisateur(Utilisateur utilisateur) {
+        // On crée un objet Medecin à partir de l'Utilisateur
+        Medecin medecin = new Medecin();
+        medecin.setNom(utilisateur.getNom() != null ? utilisateur.getNom() : "");
+        medecin.setPrenom(utilisateur.getPrenom() != null ? utilisateur.getPrenom() : "");
+        medecin.setSpecialite(utilisateur.getSpecialite() != null ? utilisateur.getSpecialite() : "Généraliste");
+        medecin.setTelephone(utilisateur.getTelephone() != null ? utilisateur.getTelephone() : "");
+        medecin.setEmail(utilisateur.getEmail() != null ? utilisateur.getEmail() : "");
+        
+        // On stocke le médecin et l'utilisateur
         this.medecinConnecte = medecin;
+        this.utilisateurConnecte = utilisateur;
+        
+        // Affichage dans l'interface
         lblMedecinNom.setText("Dr. " + medecin.getPrenom() + " " + medecin.getNom());
+        lblMedecinBienvennue.setText("Bienvenue, Dr. " + medecin.getPrenom() + " " + medecin.getNom());
         lblSpecialite.setText(medecin.getSpecialite());
 
+        // Charger les données et afficher le dashboard
         chargerDonneesFictives();
         rafraichirTout();
     }
