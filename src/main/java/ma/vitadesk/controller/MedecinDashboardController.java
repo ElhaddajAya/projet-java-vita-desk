@@ -43,6 +43,7 @@ import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
 import ma.vitadesk.model.Utilisateur;
+import ma.vitadesk.util.SessionLockManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -490,11 +491,19 @@ public class MedecinDashboardController implements Initializable {
         listeRDV.add(new RendezVous(lundi.plusDays(2), LocalTime.of(9, 0), p3, medecinConnecte, "Consultation", RendezVous.Statut.PREVU));
     }
 
-    // ==================== DÉCONNEXION ====================
+    /**
+     * Méthode pour se déconnecter
+     * Libère le lock (Thread) et retourne à l'écran de connexion
+     */
     @FXML
     private void deconnecter() {
-    	// Fermer la fenêtre actuelle (dashboard)
-        Stage dashboardStage = (Stage) tabPaneMain.getScene().getWindow();
+        // === LIBÉRATION DU LOCK ===
+        // Important : on libère le lock pour permettre à quelqu'un d'autre de se connecter
+        SessionLockManager.releaseLock();
+        
+        // Fermer la fenêtre actuelle (dashboard)
+        Stage dashboardStage = (Stage) tabPaneMain.getScene().getWindow(); // pour MedecinDashboard
+
         dashboardStage.close();
 
         // Ouvrir la fenêtre login
@@ -508,7 +517,7 @@ public class MedecinDashboardController implements Initializable {
             loginStage.centerOnScreen();
             loginStage.show();
             
-            System.out.println("Déconnexion OK!");
+            System.out.println("Déconnexion OK - Lock libéré ✓");
         } catch (IOException e) {
             e.printStackTrace();
         }

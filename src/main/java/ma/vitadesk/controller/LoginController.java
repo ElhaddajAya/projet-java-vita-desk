@@ -6,6 +6,7 @@ import javafx.stage.Stage;
 import ma.vitadesk.dao.IUtilisateurDAO;
 import ma.vitadesk.dao.UtilisateurDAOImpl;
 import ma.vitadesk.util.ConnexionException;
+import ma.vitadesk.util.SessionLockManager;
 import ma.vitadesk.model.Utilisateur;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
@@ -25,6 +27,7 @@ import javafx.scene.control.Label;
 /**
  * Contrôleur pour la page de connexion
  * Gère l'authentification des utilisateurs (secrétaires et médecins)
+ * + Empêche les connexions multiples avec un Thread
  */
 public class LoginController implements Initializable {
 
@@ -50,9 +53,22 @@ public class LoginController implements Initializable {
     /**
      * Méthode appelée quand l'utilisateur clique sur "Se Connecter"
      * Utilise maintenant les vraies données de la BDD
+     * + Vérifie qu'il n'y a pas déjà quelqu'un de connecté
      */
     @FXML
     private void handleLogin() {
+        // === VÉRIFICATION DU LOCK (Thread) ===
+        // On vérifie si quelqu'un est déjà connecté
+        if (SessionLockManager.isSessionActive()) {
+            // Si oui → on affiche une alerte et on bloque la connexion
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Session active");
+            alert.setHeaderText("Connexion impossible");
+            alert.setContentText("Un utilisateur est déjà connecté.\nVeuillez attendre qu'il se déconnecte.");
+            alert.showAndWait();
+            return; // On arrête ici
+        }
+        
         // Réinitialiser les erreurs visuelles
         lblError.setVisible(false);
         clearErrorStyle(txtLogin);
@@ -88,7 +104,18 @@ public class LoginController implements Initializable {
             // Tentative de connexion via le DAO
             Utilisateur utilisateur = authentifier(login, motDePasse, role);
             
-            // Si connexion réussie, on ouvre le dashboard approprié
+            // === ACQUISITION DU LOCK ===
+            // Si connexion réussie → on "réserve" la session
+            if (!SessionLockManager.acquireLock()) {
+                // Si on ne peut pas acquérir le lock (cas rare)
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setContentText("Impossible de démarrer la session.");
+                alert.showAndWait();
+                return;
+            }
+            
+            // Si tout est OK, on ouvre le dashboard approprié
             ouvrirDashboard(utilisateur);
             
         } catch (ma.vitadesk.util.ConnexionException e) {
@@ -175,12 +202,23 @@ public class LoginController implements Initializable {
             stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/logo.png")));
             stage.setResizable(false);
             stage.centerOnScreen();
+            
+            // === LIBÉRATION DU LOCK À LA FERMETURE ===
+            // Quand l'utilisateur ferme le dashboard → on libère le lock
+            stage.setOnCloseRequest(event -> {
+                SessionLockManager.releaseLock();
+                System.out.println("Application fermée - Lock libéré");
+            });
+            
             stage.show();
             
         } catch (IOException e) {
             e.printStackTrace();
             lblError.setText("Erreur lors de l'ouverture du dashboard");
             lblError.setVisible(true);
+            
+            // En cas d'erreur, on libère le lock
+            SessionLockManager.releaseLock();
         }
     }
 

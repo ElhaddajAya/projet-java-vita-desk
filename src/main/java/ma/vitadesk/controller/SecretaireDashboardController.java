@@ -75,6 +75,7 @@ import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
 import ma.vitadesk.model.Utilisateur;
+import ma.vitadesk.util.SessionLockManager;
 
 public class SecretaireDashboardController implements Initializable {
 	@FXML private Label lblSecretaireNom;
@@ -504,9 +505,18 @@ public class SecretaireDashboardController implements Initializable {
 	    	btn.setStyle("-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.1px; -fx-border-color: black;");
     }
     
+    /**
+     * Méthode pour se déconnecter
+     * Libère le lock (Thread) et retourne à l'écran de connexion
+     */
+    @FXML
     private void deconnecter() {
-    		// Fermer la fenêtre actuelle (dashboard)
-        Stage dashboardStage = (Stage) tabPaneMainSec.getScene().getWindow();
+        // === LIBÉRATION DU LOCK ===
+        // Important : on libère le lock pour permettre à quelqu'un d'autre de se connecter
+        SessionLockManager.releaseLock();
+        
+        // Fermer la fenêtre actuelle (dashboard)
+        Stage dashboardStage = (Stage) tabPaneMainSec.getScene().getWindow(); // pour SecretaireDashboard
         dashboardStage.close();
 
         // Ouvrir la fenêtre login
@@ -520,11 +530,11 @@ public class SecretaireDashboardController implements Initializable {
             loginStage.centerOnScreen();
             loginStage.show();
             
-            System.out.println("Déconnexion OK!");
+            System.out.println("Déconnexion OK - Lock libéré ✓");
         } catch (IOException e) {
             e.printStackTrace();
         }
-	}
+    }
 
 	// === Méthode pour supprimer plusieurs patients sélectionnés ===
     @FXML
