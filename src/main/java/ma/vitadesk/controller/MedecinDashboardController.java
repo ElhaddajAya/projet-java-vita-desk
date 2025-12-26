@@ -42,6 +42,8 @@ import ma.vitadesk.model.ConsultationDuJour;
 import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
+import ma.vitadesk.model.Utilisateur;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 
@@ -123,6 +125,9 @@ public class MedecinDashboardController implements Initializable {
     private ObservableList<Patient> listePatients = FXCollections.observableArrayList();
     private ObservableList<ConsultationDuJour> listeConsultationsJour = FXCollections.observableArrayList();
     private Medecin medecinConnecte;
+    
+    // 	Variable pour stocker l'utilisateur connecté
+    private Utilisateur utilisateurConnecte;
 
     // ==================== PASSAGE DU MÉDECIN ====================
     public void setMedecin(Medecin medecin) {

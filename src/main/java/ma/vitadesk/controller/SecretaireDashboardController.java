@@ -193,7 +193,6 @@ public class SecretaireDashboardController implements Initializable {
 	
 	// Liste de tous les rendez-vous (plus tard depuis la base de données)
 	private ObservableList<RendezVous> tousLesRDV = FXCollections.observableArrayList();
-
 	
     @Override
     public void initialize(URL location, ResourceBundle resources) {

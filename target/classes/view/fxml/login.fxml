@@ -42,7 +42,7 @@
          <font>
             <Font name="System Bold" size="13.0" />
          </font></Label>
-      <Button fx:id="btnConnecter" layoutX="43.0" layoutY="272.0" mnemonicParsing="false" onAction="#connecter" prefHeight="42.0" prefWidth="265.0" style="-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 5px;" text="Se Connecter">
+      <Button fx:id="btnConnecter" layoutX="43.0" layoutY="272.0" mnemonicParsing="false" onAction="#handleLogin" prefHeight="42.0" prefWidth="265.0" style="-fx-background-color: #4D93FF; -fx-text-fill: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 5px;" text="Se Connecter">
          <font>
             <Font name="System Bold" size="13.0" />
          </font>
