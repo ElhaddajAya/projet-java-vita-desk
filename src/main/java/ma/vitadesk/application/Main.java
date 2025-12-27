@@ -33,6 +33,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/logo.png")));
         primaryStage.centerOnScreen();
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 

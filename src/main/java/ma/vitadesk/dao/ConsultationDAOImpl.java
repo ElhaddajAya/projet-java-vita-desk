@@ -1,9 +1,12 @@
 package ma.vitadesk.dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,25 +15,26 @@ import ma.vitadesk.util.DatabaseConnection;
 
 /**
  * Implémentation DAO pour les consultations
- * Version améliorée avec utilisation de idConsultation
+ * Version corrigée avec dateConsultation (DATE SQL) au lieu de date (String)
  */
 public class ConsultationDAOImpl implements IConsultationDAO {
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     /**
      * Récupère toutes les consultations d'un patient
-     * Charge l'ID depuis la BDD pour pouvoir modifier plus tard
      */
     @Override
     public List<Consultation> getConsultationsByPatient(String numSocial) {
         List<Consultation> consultations = new ArrayList<>();
         
-        String sql = "SELECT c.idConsultation, c.date, c.diagnostic, c.traitement, " +
+        String sql = "SELECT c.idConsultation, c.dateConsultation, c.diagnostic, c.traitement, " +
                      "c.observations, c.prixConsultation, m.nom, m.prenom " +
                      "FROM consultation c " +
                      "JOIN medecin m ON c.idMedecin = m.idMedecin " +
                      "JOIN patient p ON c.idPatient = p.idPatient " +
-                     "WHERE p.numSocial = ? " +
-                     "ORDER BY STR_TO_DATE(c.date, '%d/%m/%Y') DESC";  // Les plus récentes en premier
+                     "WHERE p.numSecuSociale = ? " +
+                     "ORDER BY c.dateConsultation DESC";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -39,13 +43,17 @@ public class ConsultationDAOImpl implements IConsultationDAO {
             ResultSet rs = pst.executeQuery();
             
             while (rs.next()) {
-                // Construire le nom complet du médecin
                 String nomMedecin = "Dr. " + rs.getString("prenom") + " " + rs.getString("nom");
                 
-                // Utiliser le constructeur avec ID
+                // Convertir SQL Date → String dd/MM/yyyy
+                String dateStr = "";
+                if (rs.getDate("dateConsultation") != null) {
+                    dateStr = rs.getDate("dateConsultation").toLocalDate().format(DATE_FORMATTER);
+                }
+                
                 Consultation consultation = new Consultation(
-                    rs.getInt("idConsultation"),  // ID depuis BDD
-                    rs.getString("date"),
+                    rs.getInt("idConsultation"),
+                    dateStr,
                     nomMedecin,
                     rs.getString("diagnostic"),
                     rs.getString("traitement"),
@@ -65,21 +73,18 @@ public class ConsultationDAOImpl implements IConsultationDAO {
     }
 
     /**
-     * Récupère les consultations d'un médecin spécifique
-     * Utile pour les statistiques du médecin
+     * Récupère les consultations d'un médecin
      */
     @Override
     public List<Consultation> getConsultationsByMedecin(int idMedecin) {
         List<Consultation> consultations = new ArrayList<>();
         
-        String sql = "SELECT c.idConsultation, c.date, c.diagnostic, c.traitement, " +
-                     "c.observations, c.prixConsultation, m.nom, m.prenom, " +
-                     "p.nom AS pNom, p.prenom AS pPrenom " +
+        String sql = "SELECT c.idConsultation, c.dateConsultation, c.diagnostic, c.traitement, " +
+                     "c.observations, c.prixConsultation, m.nom, m.prenom " +
                      "FROM consultation c " +
                      "JOIN medecin m ON c.idMedecin = m.idMedecin " +
-                     "JOIN patient p ON c.idPatient = p.idPatient " +
                      "WHERE c.idMedecin = ? " +
-                     "ORDER BY STR_TO_DATE(c.date, '%d/%m/%Y') DESC";
+                     "ORDER BY c.dateConsultation DESC";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -90,9 +95,14 @@ public class ConsultationDAOImpl implements IConsultationDAO {
             while (rs.next()) {
                 String nomMedecin = "Dr. " + rs.getString("prenom") + " " + rs.getString("nom");
                 
+                String dateStr = "";
+                if (rs.getDate("dateConsultation") != null) {
+                    dateStr = rs.getDate("dateConsultation").toLocalDate().format(DATE_FORMATTER);
+                }
+                
                 Consultation consultation = new Consultation(
                     rs.getInt("idConsultation"),
-                    rs.getString("date"),
+                    dateStr,
                     nomMedecin,
                     rs.getString("diagnostic"),
                     rs.getString("traitement"),
@@ -112,22 +122,24 @@ public class ConsultationDAOImpl implements IConsultationDAO {
     }
 
     /**
-     * Ajoute une nouvelle consultation dans la BDD
-     * Lie la consultation au patient et au médecin via leurs ID
+     * Ajoute une nouvelle consultation
+     * Convertit String dd/MM/yyyy → SQL Date
      */
     @Override
     public boolean ajouterConsultation(Consultation consultation, String numSocial, int idMedecin) {
-        String sql = "INSERT INTO consultation (date, idPatient, idMedecin, diagnostic, " +
-                     "traitement, observations, prixConsultation) " +
-                     "VALUES (?, " +
-                     "(SELECT idPatient FROM patient WHERE numSocial = ?), " +
+        String sql = "INSERT INTO consultation (dateConsultation, idPatient, idMedecin, " +
+                     "diagnostic, traitement, observations, prixConsultation) " +
+                     "VALUES (?, (SELECT idPatient FROM patient WHERE numSecuSociale = ?), " +
                      "?, ?, ?, ?, ?)";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
             
-            pst.setString(1, consultation.getDate());
-            pst.setString(2, numSocial);  // Sous-requête pour trouver idPatient
+            // Convertir String → SQL Date
+            LocalDate date = LocalDate.parse(consultation.getDate(), DATE_FORMATTER);
+            pst.setDate(1, Date.valueOf(date));
+            
+            pst.setString(2, numSocial);
             pst.setInt(3, idMedecin);
             pst.setString(4, consultation.getDiagnostic());
             pst.setString(5, consultation.getTraitement());
@@ -146,7 +158,6 @@ public class ConsultationDAOImpl implements IConsultationDAO {
 
     /**
      * Modifie une consultation existante
-     * Maintenant utilise l'idConsultation pour identifier précisément la consultation
      */
     @Override
     public boolean modifierConsultation(Consultation consultation) {
@@ -161,7 +172,7 @@ public class ConsultationDAOImpl implements IConsultationDAO {
             pst.setString(2, consultation.getTraitement());
             pst.setString(3, consultation.getObservations());
             pst.setDouble(4, consultation.getPrixConsultation());
-            pst.setInt(5, consultation.getIdConsultation());  // Identification précise par ID
+            pst.setInt(5, consultation.getIdConsultation());
             
             int lignesAffectees = pst.executeUpdate();
             return lignesAffectees > 0;
@@ -174,8 +185,7 @@ public class ConsultationDAOImpl implements IConsultationDAO {
     }
     
     /**
-     * Supprime une consultation par son ID
-     * Méthode bonus (pas dans l'interface mais utile)
+     * Supprime une consultation
      */
     public boolean supprimerConsultation(int idConsultation) {
         String sql = "DELETE FROM consultation WHERE idConsultation = ?";
@@ -196,8 +206,7 @@ public class ConsultationDAOImpl implements IConsultationDAO {
     }
     
     /**
-     * Compte le nombre de consultations d'un médecin (pour statistiques)
-     * Méthode bonus pour le graphique du dashboard médecin
+     * Compte les consultations d'un médecin
      */
     public int compterConsultationsMedecin(int idMedecin) {
         String sql = "SELECT COUNT(*) AS total FROM consultation WHERE idMedecin = ?";
@@ -221,16 +230,12 @@ public class ConsultationDAOImpl implements IConsultationDAO {
     }
     
     /**
-     * Compte les consultations par jour de la semaine (pour graphique)
-     * Retourne un tableau avec le nombre de consultations pour chaque jour
-     * Index 0 = Lundi, 1 = Mardi, ..., 6 = Dimanche
+     * Statistiques par jour de la semaine
      */
     public int[] getConsultationsParJourSemaine(int idMedecin) {
-        int[] consultationsParJour = new int[7];  // 7 jours de la semaine
+        int[] consultationsParJour = new int[7];
         
-        // DAYOFWEEK retourne 1=Dimanche, 2=Lundi, ..., 7=Samedi en MySQL
-        // On ajuste pour avoir 0=Lundi, 6=Dimanche
-        String sql = "SELECT DAYOFWEEK(STR_TO_DATE(date, '%d/%m/%Y')) AS jour, COUNT(*) AS nb " +
+        String sql = "SELECT DAYOFWEEK(dateConsultation) AS jour, COUNT(*) AS nb " +
                      "FROM consultation " +
                      "WHERE idMedecin = ? " +
                      "GROUP BY jour";
@@ -242,10 +247,10 @@ public class ConsultationDAOImpl implements IConsultationDAO {
             ResultSet rs = pst.executeQuery();
             
             while (rs.next()) {
-                int jourMySQL = rs.getInt("jour");  // 1-7 (Dimanche-Samedi)
+                int jourMySQL = rs.getInt("jour");
                 int nb = rs.getInt("nb");
                 
-                // Conversion : MySQL (1=Dim, 2=Lun) → Notre index (0=Lun, 6=Dim)
+                // Conversion : MySQL (1=Dim, 2=Lun) → Index (0=Lun, 6=Dim)
                 int index = (jourMySQL == 1) ? 6 : jourMySQL - 2;
                 consultationsParJour[index] = nb;
             }
@@ -259,8 +264,7 @@ public class ConsultationDAOImpl implements IConsultationDAO {
     }
     
     /**
-     * Récupère le total des revenus des consultations d'un médecin
-     * Utile pour les statistiques financières
+     * Total des revenus
      */
     public double getTotalRevenusMedecin(int idMedecin) {
         String sql = "SELECT SUM(prixConsultation) AS total FROM consultation WHERE idMedecin = ?";
@@ -281,5 +285,64 @@ public class ConsultationDAOImpl implements IConsultationDAO {
         }
         
         return 0.0;
+    }
+    
+    /**
+     * Récupère le nombre de consultations du mois en cours
+     */
+    @Override
+    public int getConsultationsCeMois() {
+        String sql = "SELECT COUNT(*) AS total " +
+                     "FROM consultation " +
+                     "WHERE MONTH(dateConsultation) = MONTH(CURDATE()) " +
+                     "AND YEAR(dateConsultation) = YEAR(CURDATE())";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Erreur comptage consultations du mois : " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Récupère les numéros de sécu des patients ayant consulté avec un médecin
+     * Retourne une liste UNIQUE (DISTINCT)
+     */
+    @Override
+    public List<String> getNumSecuPatientsConsultes(int idMedecin) {
+        List<String> numSecus = new ArrayList<>();
+        
+        String sql = "SELECT DISTINCT p.numSecuSociale " +
+                     "FROM consultation c " +
+                     "JOIN patient p ON c.idPatient = p.idPatient " +
+                     "WHERE c.idMedecin = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            
+            pst.setInt(1, idMedecin);
+            ResultSet rs = pst.executeQuery();
+            
+            while (rs.next()) {
+                numSecus.add(rs.getString("numSecuSociale"));
+            }
+            
+            System.out.println("✅ " + numSecus.size() + " patient(s) unique(s) ayant consulté");
+            
+        } catch (SQLException e) {
+            System.err.println("Erreur récupération patients consultés : " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return numSecus;
     }
 }

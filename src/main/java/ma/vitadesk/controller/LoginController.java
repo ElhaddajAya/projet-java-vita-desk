@@ -200,7 +200,7 @@ public class LoginController implements Initializable {
             stage.setTitle(titre);
             stage.setScene(new Scene(root));
             stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/logo.png")));
-            stage.setResizable(false);
+//            stage.setResizable(false);
             stage.centerOnScreen();
             
             // === LIBÉRATION DU LOCK À LA FERMETURE ===

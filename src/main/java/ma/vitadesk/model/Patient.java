@@ -21,6 +21,9 @@ public class Patient {
     private final SimpleStringProperty cin = new SimpleStringProperty();
     private final SimpleStringProperty sexe = new SimpleStringProperty();
     private final SimpleStringProperty adresse = new SimpleStringProperty();
+    private final SimpleStringProperty groupeSanguin = new SimpleStringProperty("-");
+    private final SimpleStringProperty allergies = new SimpleStringProperty("-");
+    private final SimpleStringProperty antecedents = new SimpleStringProperty("-");
     
     // Liste des consultations du patient (chargée depuis la BDD)
     private final ObservableList<Consultation> consultations = FXCollections.observableArrayList();
@@ -67,6 +70,9 @@ public class Patient {
     public SimpleStringProperty cinProperty() { return cin; }
     public SimpleStringProperty sexeProperty() { return sexe; }
     public SimpleStringProperty adresseProperty() { return adresse; }
+    public SimpleStringProperty groupeSanguinProperty() { return groupeSanguin; }
+    public SimpleStringProperty allergiesProperty() { return allergies; }
+    public SimpleStringProperty antecedentsProperty() { return antecedents; }
     
     /**
      * Retourne la liste des consultations du patient
@@ -89,6 +95,18 @@ public class Patient {
         String addr = adresse.get();
         return (addr == null || addr.trim().isEmpty()) ? "-" : addr;
     }
+    public String getGroupeSanguin() { 
+        String groupe = groupeSanguin.get();
+        return (groupe == null || groupe.trim().isEmpty()) ? "-" : groupe;
+    }
+    public String getAllergies() { 
+        String allerg = allergies.get();
+        return (allerg == null || allerg.trim().isEmpty()) ? "-" : allerg;
+    }
+    public String getAntecedents() { 
+        String antec = antecedents.get();
+        return (antec == null || antec.trim().isEmpty()) ? "-" : antec;
+    }
     
     // === SETTERS ===
     public void setIdPatient(int idPatient) { this.idPatient = idPatient; }
@@ -99,6 +117,15 @@ public class Patient {
     public void setCin(String cin) { this.cin.set(cin); }
     public void setSexe(String sexe) { this.sexe.set(sexe); }
     public void setAdresse(String adresse) { this.adresse.set(adresse); }
+    public void setGroupeSanguin(String groupe) { 
+        this.groupeSanguin.set(groupe == null ? "-" : groupe); 
+    }
+    public void setAllergies(String allergies) { 
+        this.allergies.set(allergies == null ? "-" : allergies); 
+    }
+    public void setAntecedents(String antecedents) { 
+        this.antecedents.set(antecedents == null ? "-" : antecedents); 
+    }
     
     /**
      * Ajoute une consultation à la liste du patient

@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.DatePicker;
@@ -13,8 +14,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import ma.vitadesk.dao.IPatientDAO;
+import ma.vitadesk.dao.PatientDAOImpl;
 import ma.vitadesk.model.Patient;
 
+/**
+ * Contrôleur pour ajouter un nouveau patient
+ * Maintenant avec intégration MySQL via DAO
+ */
 public class AjouterPatientController implements Initializable {
 	
 	@FXML private TextField txtNumSocial;
@@ -27,14 +34,20 @@ public class AjouterPatientController implements Initializable {
     @FXML private TextArea txtAdresse;
 	@FXML private Label lblMessage;
 	
+    // DAO pour accéder à la base de données
+    private IPatientDAO patientDAO;
+    
+    // Reference vers le dashboard pour rafraîchir la liste
+    private SecretaireDashboardController dashboardController;
+    
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		comboSexe.getItems().addAll("F", "M"); // ajouter les valeurs au Combo (select) Sexe
-
+		// Initialiser le DAO
+        patientDAO = new PatientDAOImpl();
+        
+        // Ajouter les valeurs au Combo (select) Sexe
+		comboSexe.getItems().addAll("F", "M");
 	}
-    
-    // Reference vers le dashboard pour ajouter le patient à la liste
-    private SecretaireDashboardController dashboardController;
     
     public void setDashboardController(SecretaireDashboardController controller) {
         this.dashboardController = controller;
@@ -42,7 +55,7 @@ public class AjouterPatientController implements Initializable {
     
     @FXML
     private void enregistrer() {
-    		// Réinitialise tous les champs (au cas où il y avait des erreurs précédentes)
+    	// Réinitialise tous les champs (au cas où il y avait des erreurs précédentes)
         clearErrorStyle(txtNumSocial);
         clearErrorStyle(txtNom);
         clearErrorStyle(txtPrenom);
@@ -78,6 +91,7 @@ public class AjouterPatientController implements Initializable {
             setErrorStyle(comboSexe);
             hasError = true;
         }
+        
         // Formatage de la date (de LocalDate → String "dd/MM/yyyy")
         String dateNaissanceStr = "";
         if (txtDateNaissance.getValue() != null) {
@@ -93,23 +107,42 @@ public class AjouterPatientController implements Initializable {
             return;
         }
 
-        // Tous les champs sont valides -< création du patient
+        // Tous les champs sont valides → création du patient
         Patient nouveauPatient = new Patient(
             txtNumSocial.getText().trim(),
             txtNom.getText().trim().toUpperCase(),
             txtPrenom.getText().trim(),
-            dateNaissanceStr,  // <- String formatée            
+            dateNaissanceStr,           
             txtTelephone.getText().trim(),
             txtCin.getText().trim(),
             comboSexe.getValue(),
             txtAdresse.getText().trim() // adresse non obligatoire
         );
 
-        // Ajout au dashboard
-        dashboardController.ajouterPatient(nouveauPatient);
-
-        // Fermeture du modal
-        fermer();
+        // 🆕 ENREGISTRER DANS LA BDD
+        boolean success = patientDAO.ajouterPatient(nouveauPatient);
+        
+        if (success) {
+            // Si succès → rafraîchir la liste dans le dashboard
+            dashboardController.chargerPatients();
+            
+            // Message de succès
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Succès");
+            alert.setHeaderText(null);
+            alert.setContentText("Patient ajouté avec succès !");
+            alert.show();
+            
+            // Fermeture du modal
+            fermer();
+        } else {
+            // Si échec (ex: numéro de sécu déjà existant)
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Erreur lors de l'ajout du patient.\nLe numéro de sécurité sociale existe peut-être déjà.");
+            alert.show();
+        }
     }
 
     @FXML
@@ -129,7 +162,6 @@ public class AjouterPatientController implements Initializable {
 
     // Retire la bordure d'erreur (retour au style normal)
     private void clearErrorStyle(Control control) {
-        control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;"); // ou tu peux définir un style normal si tu veux
+        control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;");
     }
-
 }

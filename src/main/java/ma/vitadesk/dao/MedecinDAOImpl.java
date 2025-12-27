@@ -17,8 +17,7 @@ import ma.vitadesk.util.DatabaseConnection;
 public class MedecinDAOImpl implements IMedecinDAO {
 
     /**
-     * Récupère tous les médecins de la BDD
-     * JOIN pas nécessaire ici car on a déjà tout dans la table medecin
+     * Récupère tous les médecins de la BDD avec leurs ID
      */
     @Override
     public List<Medecin> getAllMedecins() {
@@ -30,9 +29,11 @@ public class MedecinDAOImpl implements IMedecinDAO {
              PreparedStatement pst = conn.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
             
-            // Pour chaque médecin trouvé, créer un objet Medecin
             while (rs.next()) {
+                // Utiliser le constructeur complet avec les ID
                 Medecin medecin = new Medecin(
+                    rs.getInt("idMedecin"),
+                    rs.getInt("idUtilisateur"),
                     rs.getString("nom"),
                     rs.getString("prenom"),
                     rs.getString("specialite"),
@@ -53,7 +54,7 @@ public class MedecinDAOImpl implements IMedecinDAO {
 
     /**
      * Récupère un médecin par son ID utilisateur
-     * Utile quand on se connecte (on connaît l'idUtilisateur)
+     * Utilisé lors de la connexion
      */
     @Override
     public Medecin getMedecinById(int idUtilisateur) {
@@ -67,6 +68,8 @@ public class MedecinDAOImpl implements IMedecinDAO {
             
             if (rs.next()) {
                 return new Medecin(
+                    rs.getInt("idMedecin"),
+                    rs.getInt("idUtilisateur"),
                     rs.getString("nom"),
                     rs.getString("prenom"),
                     rs.getString("specialite"),
@@ -85,9 +88,7 @@ public class MedecinDAOImpl implements IMedecinDAO {
 
     /**
      * Ajoute un nouveau médecin
-     * ATTENTION : Il faut d'abord créer un utilisateur, puis lier le médecin
-     * Pour l'instant, on ajoute juste le médecin sans créer l'utilisateur
-     * (à améliorer plus tard avec une transaction)
+     * Note: Pour l'instant sans créer l'utilisateur associé
      */
     @Override
     public boolean ajouterMedecin(Medecin medecin) {
@@ -115,23 +116,22 @@ public class MedecinDAOImpl implements IMedecinDAO {
 
     /**
      * Modifie les infos d'un médecin
-     * On identifie par l'idUtilisateur
+     * Utilise idMedecin pour identifier précisément
      */
     @Override
     public boolean modifierMedecin(Medecin medecin) {
-        // Note : pour modifier, il faudrait avoir l'idUtilisateur dans la classe Medecin
-        // Pour l'instant, on cherche par nom/prenom (pas idéal mais temporaire)
-        String sql = "UPDATE medecin SET specialite = ?, telephone = ?, email = ? " +
-                     "WHERE nom = ? AND prenom = ?";
+        String sql = "UPDATE medecin SET nom = ?, prenom = ?, specialite = ?, " +
+                     "telephone = ?, email = ? WHERE idMedecin = ?";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
             
-            pst.setString(1, medecin.getSpecialite());
-            pst.setString(2, medecin.getTelephone());
-            pst.setString(3, medecin.getEmail());
-            pst.setString(4, medecin.getNom());
-            pst.setString(5, medecin.getPrenom());
+            pst.setString(1, medecin.getNom());
+            pst.setString(2, medecin.getPrenom());
+            pst.setString(3, medecin.getSpecialite());
+            pst.setString(4, medecin.getTelephone());
+            pst.setString(5, medecin.getEmail());
+            pst.setInt(6, medecin.getIdMedecin());
             
             int lignesAffectees = pst.executeUpdate();
             return lignesAffectees > 0;
@@ -145,7 +145,6 @@ public class MedecinDAOImpl implements IMedecinDAO {
 
     /**
      * Supprime un médecin
-     * ATTENTION : supprime aussi ses RDV et consultations (CASCADE)
      */
     @Override
     public boolean supprimerMedecin(int idUtilisateur) {

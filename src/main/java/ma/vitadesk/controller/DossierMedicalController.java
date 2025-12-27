@@ -9,7 +9,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -22,10 +21,16 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
 import javafx.util.converter.DoubleStringConverter;
+import ma.vitadesk.dao.IConsultationDAO;
+import ma.vitadesk.dao.ConsultationDAOImpl;
 import ma.vitadesk.model.Consultation;
 import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 
+/**
+ * Contrôleur pour afficher et éditer le dossier médical d'un patient
+ * IMPORTANT: L'édition se fait directement dans le TableView (double-clic)
+ */
 public class DossierMedicalController {
 
 	@FXML private Label lblPatientNom;
@@ -45,14 +50,20 @@ public class DossierMedicalController {
 
     @FXML private Button btnExporterDossierMedical;
 
+    // DAO pour charger/modifier les consultations
+    private IConsultationDAO consultationDAO;
+    
     private Patient patient;
     private Medecin medecinConnecte; // null si secrétaire
 
     public void afficherDossier(Patient patient, Medecin medecinConnecte) {
         this.patient = patient;
         this.medecinConnecte = medecinConnecte;
+        
+        // Initialiser le DAO
+        consultationDAO = new ConsultationDAOImpl();
 
-        // === Infos patient ===
+        // Infos patient
         lblPatientNom.setText(patient.getNom() + " " + patient.getPrenom());
         lblDateNaissance.setText(patient.getDateNaissance());
         lblSexe.setText(patient.getSexe());
@@ -60,18 +71,23 @@ public class DossierMedicalController {
         lblAllergies.setText("-");
         lblAntecedents.setText("-");
 
-        // === Charger les consultations du patient ===
-        ObservableList<Consultation> consultations = patient.getConsultations();
+        // 🆕 CHARGER LES CONSULTATIONS DEPUIS LA BDD
+        ObservableList<Consultation> consultations = FXCollections.observableArrayList(
+            consultationDAO.getConsultationsByPatient(patient.getNumSocial())
+        );
 
-        // Filtrer si c'est un médecin
+        // Filtrer si c'est un médecin (voir seulement ses consultations)
         if (medecinConnecte != null) {
             String nomMedecin = "Dr. " + medecinConnecte.getPrenom() + " " + medecinConnecte.getNom();
             ObservableList<Consultation> filtres = FXCollections.observableArrayList();
-            for (Consultation c : consultations) {
+            
+            // Expression lambda pour filtrer (concept du cours)
+            consultations.forEach(c -> {
                 if (c.getMedecin().equals(nomMedecin)) {
                     filtres.add(c);
                 }
-            }
+            });
+            
             tableConsultations.setItems(filtres);
         } else {
             tableConsultations.setItems(consultations);
@@ -93,26 +109,69 @@ public class DossierMedicalController {
         colMedecin.setVisible(medecinConnecte == null);
     }
 
+    /**
+     * Configure l'édition selon le rôle
+     * Médecin: TableView éditable (double-clic sur cellule)
+     * Secrétaire: Lecture seule
+     */
     private void configurerEditionSelonRole() {
         if (medecinConnecte != null) {
-            // === MODE MÉDECIN : édition activée ===
+            // MODE MÉDECIN : édition activée
             tableConsultations.setEditable(true);
 
-            // Activer l'édition sur chaque colonne
+            // Activer l'édition sur chaque colonne + mise à jour BDD
             colDiagnostic.setCellFactory(TextFieldTableCell.forTableColumn());
-            colDiagnostic.setOnEditCommit(event -> event.getRowValue().setDiagnostic(event.getNewValue()));
+            colDiagnostic.setOnEditCommit(event -> {
+                // Modifier en mémoire
+                event.getRowValue().setDiagnostic(event.getNewValue());
+                
+                // 🆕 METTRE À JOUR DANS LA BDD
+                boolean success = consultationDAO.modifierConsultation(event.getRowValue());
+                if (!success) {
+                    // En cas d'erreur, annuler la modification
+                    tableConsultations.refresh();
+                    showAlert("Erreur", "Impossible de mettre à jour le diagnostic", Alert.AlertType.ERROR);
+                }
+            });
 
             colTraitement.setCellFactory(TextFieldTableCell.forTableColumn());
-            colTraitement.setOnEditCommit(event -> event.getRowValue().setTraitement(event.getNewValue()));
+            colTraitement.setOnEditCommit(event -> {
+                event.getRowValue().setTraitement(event.getNewValue());
+                
+                // Mise à jour BDD
+                boolean success = consultationDAO.modifierConsultation(event.getRowValue());
+                if (!success) {
+                    tableConsultations.refresh();
+                    showAlert("Erreur", "Impossible de mettre à jour le traitement", Alert.AlertType.ERROR);
+                }
+            });
 
             colObservations.setCellFactory(TextFieldTableCell.forTableColumn());
-            colObservations.setOnEditCommit(event -> event.getRowValue().setObservations(event.getNewValue()));
+            colObservations.setOnEditCommit(event -> {
+                event.getRowValue().setObservations(event.getNewValue());
+                
+                // Mise à jour BDD
+                boolean success = consultationDAO.modifierConsultation(event.getRowValue());
+                if (!success) {
+                    tableConsultations.refresh();
+                    showAlert("Erreur", "Impossible de mettre à jour les observations", Alert.AlertType.ERROR);
+                }
+            });
 
             colPrix.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-            colPrix.setOnEditCommit(event -> event.getRowValue().setPrixConsultation(event.getNewValue()));
+            colPrix.setOnEditCommit(event -> {
+                event.getRowValue().setPrixConsultation(event.getNewValue());
+                
+                // Mise à jour BDD
+                boolean success = consultationDAO.modifierConsultation(event.getRowValue());
+                if (!success) {
+                    tableConsultations.refresh();
+                    showAlert("Erreur", "Impossible de mettre à jour le prix", Alert.AlertType.ERROR);
+                }
+            });
 
         } else {
-            // === MODE SECRÉTAIRE : lecture seule ===
+            // MODE SECRÉTAIRE : lecture seule
             tableConsultations.setEditable(false);
         }
     }
@@ -128,53 +187,101 @@ public class DossierMedicalController {
 
             PDPageContentStream content = new PDPageContentStream(document, page);
 
-            // Police
+            // === TITRE ===
             content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 20);
             content.beginText();
             content.newLineAtOffset(50, 780);
-            content.showText("Dossier Médical - VitaDesk");
-            content.endText();
+            content.showText("Dossier Medical - VitaDesk");
+            content.endText(); // ← FERMER ICI
 
+            // === INFORMATIONS PATIENT ===
             content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 14);
-            content.beginText();
+            content.beginText(); // ← NOUVEAU BLOC
             content.newLineAtOffset(50, 750);
             content.showText("Patient : " + patient.getPrenom() + " " + patient.getNom());
-            content.newLineAtOffset(0, -20);
-            content.showText("N° Sécurité Sociale : " + patient.getNumSocial());
-            content.newLineAtOffset(0, -20);
+            content.endText(); // ← FERMER
+
+            content.beginText();
+            content.newLineAtOffset(50, 730);
+            content.showText("N° Securite Sociale : " + patient.getNumSocial());
+            content.endText();
+
+            content.beginText();
+            content.newLineAtOffset(50, 710);
             content.showText("Date de naissance : " + patient.getDateNaissance());
-            content.newLineAtOffset(0, -20);
+            content.endText();
+
+            content.beginText();
+            content.newLineAtOffset(50, 690);
             content.showText("Sexe : " + patient.getSexe());
-            content.newLineAtOffset(0, -20);
-            content.showText("Téléphone : " + patient.getTelephone());            
-            content.newLineAtOffset(0, -40);
+            content.endText();
+
+            content.beginText();
+            content.newLineAtOffset(50, 670);
+            content.showText("Telephone : " + patient.getTelephone());
+            content.endText();
+
+            // === TITRE CONSULTATIONS ===
+            content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 14);
+            content.beginText();
+            content.newLineAtOffset(50, 630);
             content.showText("Historique des consultations :");
             content.endText();
 
-            // Liste des consultations
-            content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 12);
-            int y = 650;
+            // === LISTE DES CONSULTATIONS ===
+            content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
+            int y = 600;
+            
             for (Consultation c : tableConsultations.getItems()) {
+                // Date et Médecin
                 content.beginText();
                 content.newLineAtOffset(50, y);
-                content.showText("Date : " + c.getDate() + " | Médecin : " + c.getMedecin());
-                content.newLineAtOffset(0, -15);
-                content.showText("Diagnostic : " + c.getDiagnostic());
-                content.newLineAtOffset(0, -15);
-                content.showText("Traitement : " + c.getTraitement());
-                content.newLineAtOffset(0, -15);
-                content.showText("Observations : " + c.getObservations());
-                content.newLineAtOffset(0, -15);
-                content.showText("Prix : " + c.getPrixConsultation() + " MAD");
-                content.newLineAtOffset(0, -20);
-                content.showText("──────────────────────────────────────────────");
+                content.showText("Date : " + c.getDate() + " | Medecin : " + c.getMedecin());
                 content.endText();
-                y -= 100;
+                y -= 20;
+
+                // Diagnostic
+                content.beginText();
+                content.newLineAtOffset(50, y);
+                content.showText("Diagnostic : " + c.getDiagnostic());
+                content.endText();
+                y -= 20;
+
+                // Traitement
+                content.beginText();
+                content.newLineAtOffset(50, y);
+                content.showText("Traitement : " + c.getTraitement());
+                content.endText();
+                y -= 20;
+
+                // Observations
+                content.beginText();
+                content.newLineAtOffset(50, y);
+                content.showText("Observations : " + (c.getObservations() == null || c.getObservations().isEmpty() ? "-" : c.getObservations()));
+                content.endText();
+                y -= 20;
+
+                // Prix
+                content.beginText();
+                content.newLineAtOffset(50, y);
+                content.showText("Prix : " + c.getPrixConsultation() + " MAD");
+                content.endText();
+                y -= 20;
+
+                // Séparateur
+                content.beginText();
+                content.newLineAtOffset(50, y);
+                content.showText("------------------------------------------------");
+                content.endText();
+                y -= 30;
+
+                // Nouvelle page si nécessaire
                 if (y < 100) {
                     content.close();
                     page = new PDPage(PDRectangle.A4);
                     document.addPage(page);
                     content = new PDPageContentStream(document, page);
+                    content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
                     y = 750;
                 }
             }
@@ -191,25 +298,22 @@ public class DossierMedicalController {
             if (file != null) {
                 document.save(file);
                 document.close();
-
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Succès");
-                alert.setContentText("Dossier médical exporté :\n" + file.getName());
-                alert.show();
+                showAlert("Succès", "Dossier médical exporté :\n" + file.getName(), Alert.AlertType.INFORMATION);
+            } else {
+                document.close();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Erreur export PDF : " + e.getMessage());
-            alert.show();
+            showAlert("Erreur", "Erreur export PDF : " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
-
-//    @FXML
-//    private void fermer() {
-//        Stage stage = (Stage) ((Node) lblPatientNom).getScene().getWindow();
-//        stage.close();
-//    }
-	
+    
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.show();
+    }
 }

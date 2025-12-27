@@ -8,22 +8,22 @@ import java.nio.file.Paths;
 
 /**
  * Classe qui gère le verrouillage des sessions avec un Thread
- * Pour empêcher plusieurs utilisateurs de se connecter en même temps
- * Utilise un fichier .lock pour savoir si quelqu'un est déjà connecté
- * 
  * Comment ça marche :
  * 1. Quand quelqu'un se connecte → on crée un fichier .lock
- * 2. Si quelqu'un d'autre essaie de se connecter → on vérifie si le fichier existe
- * 3. Si le fichier existe → on refuse la connexion
- * 4. Un Thread surveille le fichier pour éviter qu'il soit supprimé par erreur
+ * 2. Si quelqu'un d'autre essaie → on vérifie si le fichier est récent (< 10 secondes)
+ * 3. Si le fichier est vieux → on le supprime et on autorise la connexion
+ * 4. Un Thread surveille et met à jour le fichier toutes les 2 secondes
  */
 public class SessionLockManager {
     
-    // Chemin du fichier de verrouillage (lock file)
+    // Chemin du fichier de verrouillage
     private static final String LOCK_FILE_PATH = System.getProperty("user.home") + "/.vitadesk.lock";
     
     // Thread qui va surveiller le fichier lock
     private static Thread lockMonitorThread;
+    
+    // Temps maximum avant de considérer qu'une session est abandonnée (10 secondes)
+    private static final long MAX_LOCK_AGE = 10000; // 10 secondes en millisecondes
     
     /**
      * Essaie d'acquérir le verrou (lock) pour se connecter
@@ -32,26 +32,37 @@ public class SessionLockManager {
     public static boolean acquireLock() {
         File lockFile = new File(LOCK_FILE_PATH);
         
-        // Si le fichier existe déjà → quelqu'un est connecté
+        // Si le fichier existe déjà
         if (lockFile.exists()) {
-            return false;
+            // Vérifier si le fichier est récent (session vraiment active)
+            long fileAge = System.currentTimeMillis() - lockFile.lastModified();
+            
+            if (fileAge > MAX_LOCK_AGE) {
+                // Le fichier est vieux → session abandonnée → on le supprime
+                System.out.println("⚠️ Ancien fichier lock détecté (session abandonnée), suppression...");
+                lockFile.delete();
+            } else {
+                // Le fichier est récent → quelqu'un est vraiment connecté
+                return false;
+            }
         }
         
-        // Sinon, on crée le fichier pour "réserver" la session
+        // Créer le nouveau fichier lock
         try {
             lockFile.createNewFile();
             
-            // On écrit la date/heure de connexion dans le fichier
+            // Écrire la date/heure de connexion
             FileWriter writer = new FileWriter(lockFile);
             writer.write("Session démarrée à : " + java.time.LocalDateTime.now());
             writer.close();
             
-            // Important : on supprime le fichier quand l'application se ferme
+            // Supprimer automatiquement à la fermeture
             lockFile.deleteOnExit();
             
-            // On démarre un thread qui surveille le fichier
+            // Démarrer le thread de surveillance
             startLockMonitor();
             
+            System.out.println("✅ Session lock acquis");
             return true;
             
         } catch (IOException e) {
@@ -66,14 +77,14 @@ public class SessionLockManager {
      */
     public static void releaseLock() {
         try {
-            // On arrête le thread de surveillance
+            // Arrêter le thread de surveillance
             if (lockMonitorThread != null && lockMonitorThread.isAlive()) {
                 lockMonitorThread.interrupt();
             }
             
-            // On supprime le fichier lock
+            // Supprimer le fichier lock
             Files.deleteIfExists(Paths.get(LOCK_FILE_PATH));
-            System.out.println("Session libérée ✓");
+            System.out.println("✅ Session libérée");
             
         } catch (IOException e) {
             System.err.println("Erreur lors de la libération du lock : " + e.getMessage());
@@ -82,13 +93,14 @@ public class SessionLockManager {
     
     /**
      * Démarre un thread qui surveille le fichier lock
-     * Si le fichier est supprimé par erreur, on le recrée
+     * Le thread met à jour la date de modification toutes les 2 secondes
+     * pour prouver que la session est toujours active
      */
     private static void startLockMonitor() {
         lockMonitorThread = new Thread(() -> {
             File lockFile = new File(LOCK_FILE_PATH);
             
-            // Boucle infinie qui vérifie toutes les 2 secondes
+            // Boucle infinie qui s'exécute toutes les 2 secondes
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     // Si le fichier n'existe plus, on le recrée
@@ -97,11 +109,16 @@ public class SessionLockManager {
                         lockFile.createNewFile();
                     }
                     
-                    // On attend 2 secondes avant de revérifier
+                    // Mettre à jour la date de modification du fichier
+                    // Ça prouve que la session est toujours active
+                    lockFile.setLastModified(System.currentTimeMillis());
+                    
+                    // Attendre 2 secondes avant la prochaine vérification
                     Thread.sleep(2000);
                     
                 } catch (InterruptedException e) {
                     // Le thread a été arrêté → on sort de la boucle
+                    System.out.println("🛑 Thread de surveillance arrêté");
                     break;
                 } catch (IOException e) {
                     System.err.println("Erreur dans le thread de surveillance : " + e.getMessage());
@@ -109,9 +126,10 @@ public class SessionLockManager {
             }
         });
         
-        // On met le thread en daemon pour qu'il se ferme avec l'application
+        // Thread daemon = se ferme automatiquement avec l'application
         lockMonitorThread.setDaemon(true);
         lockMonitorThread.start();
+        System.out.println("🔄 Thread de surveillance démarré");
     }
     
     /**
@@ -119,6 +137,21 @@ public class SessionLockManager {
      * @return true si quelqu'un est connecté, false sinon
      */
     public static boolean isSessionActive() {
-        return new File(LOCK_FILE_PATH).exists();
+        File lockFile = new File(LOCK_FILE_PATH);
+        
+        if (!lockFile.exists()) {
+            return false;
+        }
+        
+        // Vérifier si le fichier est récent
+        long fileAge = System.currentTimeMillis() - lockFile.lastModified();
+        
+        if (fileAge > MAX_LOCK_AGE) {
+            // Fichier trop vieux → session abandonnée
+            lockFile.delete();
+            return false;
+        }
+        
+        return true;
     }
 }

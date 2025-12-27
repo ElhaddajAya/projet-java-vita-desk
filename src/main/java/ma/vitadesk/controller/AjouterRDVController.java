@@ -14,13 +14,17 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import ma.vitadesk.dao.*;
 import ma.vitadesk.model.Medecin;
 import ma.vitadesk.model.Patient;
 import ma.vitadesk.model.RendezVous;
 
+/**
+ * Contrôleur pour ajouter un RDV
+ * Version intégrée avec MySQL
+ */
 public class AjouterRDVController implements Initializable {
 
 	@FXML private DatePicker datePickerRDV;
@@ -29,44 +33,42 @@ public class AjouterRDVController implements Initializable {
     @FXML private ComboBox<String> comboDocteur;
     @FXML private TextField txtMotif;
     
-    // Listes reçues depuis le dashboard
+    // DAO pour charger patients et médecins
+    private IPatientDAO patientDAO;
+    private IMedecinDAO medecinDAO;
+    
+    // Listes chargées depuis la BDD
     private ObservableList<Patient> patients = FXCollections.observableArrayList();
     private ObservableList<Medecin> medecins = FXCollections.observableArrayList();
     
     private Medecin medecinConnecte; // Pour le mode médecin
     
-    private SecretaireDashboardController dashboardController;
+    private SecretaireDashboardController dashboardControllerSec;
     private MedecinDashboardController dashboardControllerMed;
     
     public void setDashboardController(SecretaireDashboardController controller) {
-        this.dashboardController = controller;
+        this.dashboardControllerSec = controller;
     }
     
     public void setDashboardControllerMed(MedecinDashboardController controller) {
         this.dashboardControllerMed = controller;
     }
-    
-	// Méthode appelée depuis le dashboard pour passer les listes
-    public void initialiserAvecListes(ObservableList<Patient> patients, ObservableList<Medecin> medecins) {
-        this.patients = patients;
-        this.medecins = medecins;
-        remplirComboPatients();
-        remplirComboDocteurs();
-    }
-    
-    public void initialiserPourMedecin(ObservableList<Patient> patients, Medecin medecinConnecte) {
-        this.patients = patients;
-        this.medecinConnecte = medecinConnecte;
-        remplirComboPatients();
-        
-        // Désactiver et pré-remplir le ComboBox docteur
-        comboDocteur.setDisable(true);
-        comboDocteur.setValue("Dr. " + medecinConnecte.getPrenom() + " " + medecinConnecte.getNom() + " - " + medecinConnecte.getSpecialite());
-        comboDocteur.setStyle("-fx-opacity: 1.0;"); // Garder visible même si désactivé
-    }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // Initialiser les DAO
+        patientDAO = new PatientDAOImpl();
+        medecinDAO = new MedecinDAOImpl();
+        
+        // Charger les données depuis la BDD
+        patients.addAll(patientDAO.getAllPatients());
+        medecins.addAll(medecinDAO.getAllMedecins());
+        
+        // Remplir les ComboBox
+        remplirComboPatients();
+        remplirComboDocteurs();
+        
+        // Heures disponibles
         comboHeure.getItems().addAll(
             "08:00", "09:00", "10:00", "11:00", "12:00",
             "13:00", "14:00", "15:00", "16:00", "17:00"
@@ -74,13 +76,29 @@ public class AjouterRDVController implements Initializable {
         comboHeure.setPromptText("Choisir l'heure");
         txtMotif.setPromptText("Ex: Consultation générale, Contrôle...");
     }
+    
+    /**
+     * Pour le mode médecin : pré-remplir le médecin
+     */
+    public void initialiserPourMedecin(Medecin medecinConnecte) {
+        this.medecinConnecte = medecinConnecte;
+        
+        // Désactiver et pré-remplir le ComboBox docteur
+        comboDocteur.setDisable(true);
+        comboDocteur.setValue("Dr. " + medecinConnecte.getPrenom() + " " + 
+                             medecinConnecte.getNom() + " - " + 
+                             medecinConnecte.getSpecialite());
+        comboDocteur.setStyle("-fx-opacity: 1.0;");
+    }
 
     // === ComboBox Patient avec recherche ===
     private void remplirComboPatients() {
         ObservableList<String> patientStrings = FXCollections.observableArrayList();
-        for (Patient p : patients) {
-            patientStrings.add(p.getPrenom() + " " + p.getNom() + " - " + p.getNumSocial());
-        }
+        
+        // 🆕 Utiliser LAMBDA pour transformer Patient → String
+        patients.forEach(p -> patientStrings.add(
+            p.getPrenom() + " " + p.getNom() + " - " + p.getNumSocial()
+        ));
 
         FilteredList<String> filtered = new FilteredList<>(patientStrings, s -> true);
         comboPatient.setItems(filtered);
@@ -91,7 +109,6 @@ public class AjouterRDVController implements Initializable {
             if (!comboPatient.isShowing() && !texte.isEmpty()) comboPatient.show();
         });
 
-        // Quand on sélectionne → garder le texte
         comboPatient.setOnAction(e -> {
             if (comboPatient.getValue() != null) {
                 comboPatient.getEditor().setText(comboPatient.getValue());
@@ -102,9 +119,11 @@ public class AjouterRDVController implements Initializable {
     // === ComboBox Medecin avec recherche ===
     private void remplirComboDocteurs() {
         ObservableList<String> docteurStrings = FXCollections.observableArrayList();
-        for (Medecin d : medecins) {
-            docteurStrings.add("Dr. " + d.getPrenom() + " " + d.getNom() + " - " + d.getSpecialite());
-        }
+        
+        // 🆕 Utiliser LAMBDA
+        medecins.forEach(d -> docteurStrings.add(
+            "Dr. " + d.getPrenom() + " " + d.getNom() + " - " + d.getSpecialite()
+        ));
 
         FilteredList<String> filtered = new FilteredList<>(docteurStrings, s -> true);
         comboDocteur.setItems(filtered);
@@ -121,7 +140,6 @@ public class AjouterRDVController implements Initializable {
             }
         });
     }
-
 
     // === Enregistrer ===
     @FXML
@@ -172,8 +190,8 @@ public class AjouterRDVController implements Initializable {
         );
 
         // Appeler le bon dashboard controller
-        if (dashboardController != null) {
-            dashboardController.ajouterRDV(rdv);
+        if (dashboardControllerSec != null) {
+            dashboardControllerSec.ajouterRDV(rdv);
         } else if (dashboardControllerMed != null) {
             dashboardControllerMed.ajouterRDV(rdv);
         }
@@ -181,22 +199,32 @@ public class AjouterRDVController implements Initializable {
         fermer();
     }
     
-    // Méthode pour rechercher le patient depuis le nom/prénom saisie dans le ComboBox
+    /**
+     * Trouve un patient par le texte du ComboBox
+     * UTILISE LAMBDA (concept du cours)
+     */
     private Patient trouverPatient(String texte) {
-        for (Patient p : patients) {
-            String str = p.getPrenom() + " " + p.getNom() + " - " + p.getNumSocial();
-            if (str.equals(texte)) return p;
-        }
-        return null;
+        return patients.stream()
+            .filter(p -> {
+                String str = p.getPrenom() + " " + p.getNom() + " - " + p.getNumSocial();
+                return str.equals(texte);
+            })
+            .findFirst()
+            .orElse(null);
     }
 
-    // Méthode pour rechercher le docteur depuis le nom/prénom saisie dans le ComboBox
+    /**
+     * Trouve un médecin par le texte du ComboBox
+     * UTILISE LAMBDA
+     */
     private Medecin trouverDocteur(String texte) {
-        for (Medecin d : medecins) {
-            String str = "Dr. " + d.getPrenom() + " " + d.getNom() + " - " + d.getSpecialite();
-            if (str.equals(texte)) return d;
-        }
-        return null;
+        return medecins.stream()
+            .filter(d -> {
+                String str = "Dr. " + d.getPrenom() + " " + d.getNom() + " - " + d.getSpecialite();
+                return str.equals(texte);
+            })
+            .findFirst()
+            .orElse(null);
     }
 	
 	@FXML
@@ -209,14 +237,11 @@ public class AjouterRDVController implements Initializable {
         stage.close();
     }
 
-    // Applique une bordure rouge à un TextField ou TextArea
     private void setErrorStyle(Control control) {
         control.setStyle("-fx-background-color: white; -fx-border-color: red; -fx-border-width: 0.3px; -fx-border-radius: 3px; -fx-font-size: 13px;");
     }
 
-    // Retire la bordure d'erreur (retour au style normal)
     private void clearErrorStyle(Control control) {
-        control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;"); // ou tu peux définir un style normal si tu veux
+        control.setStyle("-fx-background-color: white; -fx-border-width: 0.2px; -fx-border-color: black; -fx-border-radius: 3; -fx-font-size: 13px;");
     }
-	
 }

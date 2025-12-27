@@ -45,9 +45,17 @@ public interface IRendezVousDAO {
     boolean modifierRendezVous(RendezVous rdv);
     
     /**
-     * Supprime un RDV
+     * Supprime un RDV par son ID
      * @param idRDV l'ID du RDV à supprimer
      * @return true si suppression réussie
      */
     boolean supprimerRendezVous(int idRDV);
+    
+    /**
+     * Supprime un RDV par ses caractéristiques
+     * Méthode surchargée pour quand on n'a pas l'ID
+     * @param rdv le rendez-vous à supprimer
+     * @return true si suppression réussie
+     */
+    boolean supprimerRendezVous(RendezVous rdv);
 }

@@ -43,4 +43,12 @@ public interface IPatientDAO {
      * @return true si succès, false sinon
      */
     boolean supprimerPatient(String numSocial);
+    
+    /**
+     * Récupère le nombre de nouveaux patients du mois en cours
+     * (En supposant qu'on a une colonne dateInscription dans patient)
+     * Si cette colonne n'existe pas, retourner 0 ou compter tous les patients
+     * @return nombre de nouveaux patients ce mois
+     */
+    int getNouveauxPatientsCeMois();
 }
