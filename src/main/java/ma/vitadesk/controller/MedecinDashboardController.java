@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -129,16 +130,16 @@ public class MedecinDashboardController implements Initializable {
     @FXML private Label selectedDatePlanningMed;
     
     // VBox pour chaque créneau horaire (Lundi à Samedi, 8h à 17h)
-    @FXML private VBox cellLundiMed0800, cellMardiMed0800, cellMercrediMed0800, cellJeudiMed0800, cellVendrediMed0800, cellSamediMed0800;
-    @FXML private VBox cellLundiMed0900, cellMardiMed0900, cellMercrediMed0900, cellJeudiMed0900, cellVendrediMed0900, cellSamediMed0900;
-    @FXML private VBox cellLundiMed1000, cellMardiMed1000, cellMercrediMed1000, cellJeudiMed1000, cellVendrediMed1000, cellSamediMed1000;
-    @FXML private VBox cellLundiMed1100, cellMardiMed1100, cellMercrediMed1100, cellJeudiMed1100, cellVendrediMed1100, cellSamediMed1100;
-    @FXML private VBox cellLundiMed1200, cellMardiMed1200, cellMercrediMed1200, cellJeudiMed1200, cellVendrediMed1200, cellSamediMed1200;
-    @FXML private VBox cellLundiMed1300, cellMardiMed1300, cellMercrediMed1300, cellJeudiMed1300, cellVendrediMed1300, cellSamediMed1300;
-    @FXML private VBox cellLundiMed1400, cellMardiMed1400, cellMercrediMed1400, cellJeudiMed1400, cellVendrediMed1400, cellSamediMed1400;
-    @FXML private VBox cellLundiMed1500, cellMardiMed1500, cellMercrediMed1500, cellJeudiMed1500, cellVendrediMed1500, cellSamediMed1500;
-    @FXML private VBox cellLundiMed1600, cellMardiMed1600, cellMercrediMed1600, cellJeudiMed1600, cellVendrediMed1600, cellSamediMed1600;
-    @FXML private VBox cellLundiMed1700, cellMardiMed1700, cellMercrediMed1700, cellJeudiMed1700, cellVendrediMed1700, cellSamediMed1700;
+    @FXML private VBox cellLundi0800Med, cellMardi0800Med, cellMercredi0800Med, cellJeudi0800Med, cellVendredi0800Med, cellSamedi0800Med;
+    @FXML private VBox cellLundi0900Med, cellMardi0900Med, cellMercredi0900Med, cellJeudi0900Med, cellVendredi0900Med, cellSamedi0900Med;
+    @FXML private VBox cellLundi1000Med, cellMardi1000Med, cellMercredi1000Med, cellJeudi1000Med, cellVendredi1000Med, cellSamedi1000Med;
+    @FXML private VBox cellLundi1100Med, cellMardi1100Med, cellMercredi1100Med, cellJeudi1100Med, cellVendredi1100Med, cellSamedi1100Med;
+    @FXML private VBox cellLundi1200Med, cellMardi1200Med, cellMercredi1200Med, cellJeudi1200Med, cellVendredi1200Med, cellSamedi1200Med;
+    @FXML private VBox cellLundi1300Med, cellMardi1300Med, cellMercredi1300Med, cellJeudi1300Med, cellVendredi1300Med, cellSamedi1300Med;
+    @FXML private VBox cellLundi1400Med, cellMardi1400Med, cellMercredi1400Med, cellJeudi1400Med, cellVendredi1400Med, cellSamedi1400Med;
+    @FXML private VBox cellLundi1500Med, cellMardi1500Med, cellMercredi1500Med, cellJeudi1500Med, cellVendredi1500Med, cellSamedi1500Med;
+    @FXML private VBox cellLundi1600Med, cellMardi1600Med, cellMercredi1600Med, cellJeudi1600Med, cellVendredi1600Med, cellSamedi1600Med;
+    @FXML private VBox cellLundi1700Med, cellMardi1700Med, cellMercredi1700Med, cellJeudi1700Med, cellVendredi1700Med, cellSamedi1700Med;
 
     // ==================== ATTRIBUTS DAO (INTÉGRATION MYSQL) ====================
     private IPatientDAO patientDAO;
@@ -236,10 +237,10 @@ public class MedecinDashboardController implements Initializable {
             
             System.out.println("✅ Toutes les données chargées");
             
-            System.out.println("📊 Chargement statistiques...");
+            System.out.println("📊 Chargement statistiques...");            
             chargerStatistiquesAccueil();
             
-            System.out.println("✅ Toutes les données chargées");
+            System.out.println("✅ Toutes les données chargées");            
         } else {
             System.err.println("❌ ERREUR: Impossible de charger le médecin ID=" + utilisateur.getId());
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -255,44 +256,59 @@ public class MedecinDashboardController implements Initializable {
      * Configure la TableView de l'historique des patients
      */
     private void configurerHistoriquePatients() {
-        // Liaison des colonnes
-        colNumSocial.setCellValueFactory(new PropertyValueFactory<>("numSocial"));
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
-        colPrenom.setCellValueFactory(new PropertyValueFactory<>("prenom"));
-        colDateNaissance.setCellValueFactory(new PropertyValueFactory<>("dateNaissance"));
-        colSexe.setCellValueFactory(new PropertyValueFactory<>("sexe"));
+        System.out.println("🔧 Configuration table patients...");
+        
+        // Configurer les colonnes
+        colNumSocial.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("numSocial"));
+        colNom.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("nom"));
+        colPrenom.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("prenom"));
+        colDateNaissance.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("dateNaissance"));
+        colSexe.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("sexe"));
+        
+        // Colonne "Dernière Consultation"
         colDerniereConsultation.setCellValueFactory(cellData -> {
-            // TODO: Récupérer la vraie dernière consultation depuis la BDD
-            return new javafx.beans.property.SimpleStringProperty("-");
+            Patient patient = cellData.getValue();
+            List<Consultation> consultations = consultationDAO.getConsultationsByPatient(patient.getNumSocial());
+            
+            if (consultations.isEmpty()) {
+                return new javafx.beans.property.SimpleStringProperty("Aucune");
+            } else {
+                Consultation derniere = consultations.get(consultations.size() - 1);
+                return new javafx.beans.property.SimpleStringProperty(derniere.getDate());
+            }
         });
         
-        // Colonne Actions (Dossier Médical)
-        colActionDossier.setCellFactory(param -> new TableCell<Patient, Void>() {
-            private final Button btnDossier = new Button("Dossier Médical");
-
+        // Colonne "Action" - Bouton "Voir Dossier"
+        colActionDossier.setCellFactory(param -> new javafx.scene.control.TableCell<>() {
+            private final javafx.scene.control.Button btnVoir = new javafx.scene.control.Button("Dossier Médical");
+            
             {
-                btnDossier.setStyle(
-                    "-fx-background-color: #FF9000; " +
-                    "-fx-text-fill: white; " +
-                    "-fx-font-weight: bold; " +
-                    "-fx-padding: 8 20; " +
-                    "-fx-background-radius: 6; " +
-                    "-fx-cursor: HAND;"
-                );
-                btnDossier.setOnAction(e -> {
+            		btnVoir.setStyle(
+    					"-fx-background-color: #FF9000; " +
+    					"-fx-text-fill: white; " +
+    					"-fx-cursor: HAND; " +
+    					"-fx-font-weight: bold; " +
+    					"-fx-padding: 8 16 8 16; " +
+    					"-fx-background-radius: 6;"
+    				);
+                
+                btnVoir.setOnAction(event -> {
                     Patient patient = getTableView().getItems().get(getIndex());
                     ouvrirDossierMedical(patient);
                 });
             }
-
+            
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btnDossier);
+                setGraphic(empty ? null : btnVoir);
             }
         });
         
-        // Les données seront chargées dans setUtilisateur()
+        // Lier au TableView
+        tablePatientsMed.setItems(listePatients);
+        
+        System.out.println("✅ Table patients configurée");
     }
     
     // ==================== CONFIGURATION CONSULTATIONS DU JOUR ====================
@@ -348,29 +364,38 @@ public class MedecinDashboardController implements Initializable {
      */
     private void chargerPatients() {
         if (medecinConnecte == null) {
-            System.err.println("❌ medecinConnecte NULL - impossible de charger les patients");
+            System.err.println("❌ medecinConnecte NULL");
             return;
         }
         
-        System.out.println("📊 Chargement patients ayant consulté avec médecin ID=" + medecinConnecte.getIdMedecin());
+        System.out.println("📊 Chargement patients (médecin ID=" + medecinConnecte.getIdMedecin() + ")");
         
-        // 1. Récupérer les numéros de sécu des patients consultés
+        // 1. Récupérer numéros de sécu
         List<String> numSecuConsultes = consultationDAO.getNumSecuPatientsConsultes(
             medecinConnecte.getIdMedecin()
         );
         
-        System.out.println("   → " + numSecuConsultes.size() + " patient(s) unique(s) ayant consulté");
+        System.out.println("   → DAO: " + numSecuConsultes.size() + " numéro(s)");
+        if (!numSecuConsultes.isEmpty()) {
+            System.out.println("   → " + numSecuConsultes);
+        }
         
         // 2. Charger tous les patients
         List<Patient> tousPatients = patientDAO.getAllPatients();
         
-        // 3. FILTRER avec LAMBDA - Garder seulement ceux qui ont consulté
+        // 3. Filtrer
         listePatients.clear();
         tousPatients.stream()
             .filter(p -> numSecuConsultes.contains(p.getNumSocial()))
-            .forEach(p -> listePatients.add(p));
+            .forEach(p -> {
+                listePatients.add(p);
+                System.out.println("      ✓ " + p.getPrenom() + " " + p.getNom());
+            });
         
-        System.out.println("✅ " + listePatients.size() + " patient(s) chargé(s) dans l'historique");
+        System.out.println("✅ " + listePatients.size() + " patient(s) dans l'historique");
+        
+        // FORCER RAFRAÎCHISSEMENT
+        tablePatientsMed.refresh();
     }
     
     /**
@@ -396,50 +421,51 @@ public class MedecinDashboardController implements Initializable {
     private void chargerRendezVous(LocalDate date) {
         System.out.println("📅 Chargement RDV pour la semaine du " + date);
         
-        // 1. NETTOYER TOUTES LES CELLULES DU PLANNING D'ABORD
-        for (int h = 0; h < 10; h++) {
-            for (int j = 0; j < 6; j++) {
-                if (planningCellsMed[h][j] != null) {
-                    planningCellsMed[h][j].getChildren().clear();
-                }
-            }
-        }
-        
         if (medecinConnecte == null) {
             System.err.println("❌ medecinConnecte NULL");
             return;
         }
         
-        // 2. 🆕 CALCULER LA SEMAINE COMPLÈTE (Lundi à Samedi)
+        viderToutesLesCellules();
+        
+		
+		// 🔄 VIDER listeRDV pour éviter les doublons
+		listeRDV.clear();
+        
+        // 🔄 VIDER listeRDV pour éviter les doublons
         LocalDate lundi = date.with(DayOfWeek.MONDAY);
-        LocalDate samedi = lundi.plusDays(5); // Lundi + 5 = Samedi
+        LocalDate samedi = lundi.plusDays(5);
         
         System.out.println("   📆 Semaine: du " + lundi + " au " + samedi);
+        System.out.println("   👨‍⚕️ Médecin: Dr. " + medecinConnecte.getNom() + " (ID=" + medecinConnecte.getIdMedecin() + ")");
         
-        // 3. 🆕 CHARGER TOUS LES RDV DE LA SEMAINE
-        listeRDV.clear();
+        // CHARGER TOUS LES JOURS + FILTRER PAR MÉDECIN
         LocalDate jour = lundi;
+        int totalRdv = 0;
+        
         while (!jour.isAfter(samedi)) {
             List<RendezVous> rdvDuJour = rendezVousDAO.getRendezVousByDate(jour);
+			System.out.println("   🔍 " + jour + " : " + rdvDuJour.size() + " RDV trouvé(s)");
             
-            // Filtrer par médecin connecté
-            rdvDuJour.stream()
-                .filter(rdv -> rdv.getMedecin().getIdMedecin() == medecinConnecte.getIdMedecin())
-                .forEach(rdv -> {
-                    listeRDV.add(rdv);
+            for (RendezVous rdv : rdvDuJour) {
+                // FILTRER PAR MÉDECIN !
+                if (rdv.getMedecin().getIdMedecin() == medecinConnecte.getIdMedecin()) {
                     ajouterRDVAuPlanning(rdv);
-                });
+                    listeRDV.add(rdv); // 🔄 Ajouter à la liste pour les consultations du jour
+                    totalRdv++;
+                }
+            }
             
             jour = jour.plusDays(1);
         }
         
-        System.out.println("✅ " + listeRDV.size() + " RDV chargés pour Dr. " + medecinConnecte.getNom());
+        System.out.println("✅ " + totalRdv + " RDV chargés pour Dr. " + medecinConnecte.getNom());
     }
     
     /**
      * 🆕 Charge les consultations du jour (RDV avec statut PREVU)
      */
-    private void chargerConsultationsDuJour() {
+    public void chargerConsultationsDuJour() {
         listeConsultationsDuJour.clear();
         
         if (medecinConnecte == null) return;
@@ -467,27 +493,17 @@ public class MedecinDashboardController implements Initializable {
      * 🆕 Charge le graphique de la semaine depuis les stats BDD
      */
     public void chargerGraphiqueSemaine() {
-        if (medecinConnecte == null) {
-            System.err.println("❌ medecinConnecte est NULL - impossible de charger le graphique");
-            return;
-        }
+        if (medecinConnecte == null) return;
         
-        System.out.println("📊 Chargement graphique pour médecin ID=" + medecinConnecte.getIdMedecin());
+        System.out.println("📊 Chargement graphique semaine...");
         
-        // UTILISER LA MÉTHODE DU DAO POUR OBTENIR LES STATS
         int[] consultationsParJour = consultationDAO.getConsultationsParJourSemaine(
             medecinConnecte.getIdMedecin()
         );
         
-        // DEBUG : afficher les valeurs
-        System.out.println("Stats semaine: " + java.util.Arrays.toString(consultationsParJour));
-        
-        // Remplir le graphique
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Consultations");
-        
         String[] jours = {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"};
-        
         for (int i = 0; i < 7; i++) {
             series.getData().add(new XYChart.Data<>(jours[i], consultationsParJour[i]));
         }
@@ -495,7 +511,7 @@ public class MedecinDashboardController implements Initializable {
         barRdvSemaineMed.getData().clear();
         barRdvSemaineMed.getData().add(series);
         
-        System.out.println("✅ Graphique de la semaine chargé");
+        System.out.println("✅ Graphique médecin chargé");
     }
     
 	// ==================== CONFIGURATION PLANNING ====================
@@ -507,19 +523,40 @@ public class MedecinDashboardController implements Initializable {
 		// Initialiser le tableau des cellules
 		initializePlanningCells();
 		
-		// DatePicker : changer de date
-		datePickerPlanningMed.setValue(selectedDate);
-		datePickerPlanningMed.setOnAction(event -> {
-			selectedDate = datePickerPlanningMed.getValue();
-			if (selectedDate != null) {
-				selectedDatePlanningMed.setText(selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-				// 🆕 CHARGER LES RDV DE LA NOUVELLE DATE DEPUIS LA BDD
+		// 🔄 CONFIGURER LE LISTENER AVANT setValue()
+		datePickerPlanningMed.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null && (oldValue == null || !newValue.equals(oldValue))) {
+				selectedDate = newValue;
+				System.out.println("🗓️ DATE CHANGÉE (Médecin) : " + oldValue + " → " + newValue);
+				
+				// Calculer la semaine complète
+				LocalDate lundi = selectedDate.with(java.time.DayOfWeek.MONDAY);
+				LocalDate samedi = lundi.plusDays(5);
+				
+				// Mettre à jour le label avec la SEMAINE
+				selectedDatePlanningMed.setText(
+					lundi.format(DateTimeFormatter.ofPattern("dd/MM")) + 
+					" au " + 
+					samedi.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+				);
+				
+				// Recharger le planning pour cette semaine
+				System.out.println("📅 Rechargement planning semaine du " + lundi + " au " + samedi);
 				rafraichirPlanning();
 			}
 		});
 		
-		// Afficher la date sélectionnée
-		selectedDatePlanningMed.setText(selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+		// Initialiser la valeur APRÈS le listener
+		datePickerPlanningMed.setValue(selectedDate);
+		
+		// Afficher la semaine complète dans le label au démarrage
+		LocalDate lundi = selectedDate.with(java.time.DayOfWeek.MONDAY);
+		LocalDate samedi = lundi.plusDays(5);
+		selectedDatePlanningMed.setText(
+			lundi.format(DateTimeFormatter.ofPattern("dd/MM")) + 
+			" au " + 
+			samedi.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+		);
 	}
 	
 	/**
@@ -528,35 +565,35 @@ public class MedecinDashboardController implements Initializable {
 	private void initializePlanningCells() {
 		// Lundi = 0, Mardi = 1, ..., Samedi = 5
 		// 8h = 0, 9h = 1, ..., 17h = 9
-		planningCellsMed[0][0] = cellLundiMed0800;  planningCellsMed[0][1] = cellMardiMed0800;  planningCellsMed[0][2] = cellMercrediMed0800;
-		planningCellsMed[0][3] = cellJeudiMed0800;  planningCellsMed[0][4] = cellVendrediMed0800; planningCellsMed[0][5] = cellSamediMed0800;
+		planningCellsMed[0][0] = cellLundi0800Med;  planningCellsMed[0][1] = cellMardi0800Med;  planningCellsMed[0][2] = cellMercredi0800Med;
+		planningCellsMed[0][3] = cellJeudi0800Med;  planningCellsMed[0][4] = cellVendredi0800Med; planningCellsMed[0][5] = cellSamedi0800Med;
 		
-		planningCellsMed[1][0] = cellLundiMed0900;  planningCellsMed[1][1] = cellMardiMed0900;  planningCellsMed[1][2] = cellMercrediMed0900;
-		planningCellsMed[1][3] = cellJeudiMed0900;  planningCellsMed[1][4] = cellVendrediMed0900; planningCellsMed[1][5] = cellSamediMed0900;
+		planningCellsMed[1][0] = cellLundi0900Med;  planningCellsMed[1][1] = cellMardi0900Med;  planningCellsMed[1][2] = cellMercredi0900Med;
+		planningCellsMed[1][3] = cellJeudi0900Med;  planningCellsMed[1][4] = cellVendredi0900Med; planningCellsMed[1][5] = cellSamedi0900Med;
 		
-		planningCellsMed[2][0] = cellLundiMed1000;  planningCellsMed[2][1] = cellMardiMed1000;  planningCellsMed[2][2] = cellMercrediMed1000;
-		planningCellsMed[2][3] = cellJeudiMed1000;  planningCellsMed[2][4] = cellVendrediMed1000; planningCellsMed[2][5] = cellSamediMed1000;
+		planningCellsMed[2][0] = cellLundi1000Med;  planningCellsMed[2][1] = cellMardi1000Med;  planningCellsMed[2][2] = cellMercredi1000Med;
+		planningCellsMed[2][3] = cellJeudi1000Med;  planningCellsMed[2][4] = cellVendredi1000Med; planningCellsMed[2][5] = cellSamedi1000Med;
 		
-		planningCellsMed[3][0] = cellLundiMed1100;  planningCellsMed[3][1] = cellMardiMed1100;  planningCellsMed[3][2] = cellMercrediMed1100;
-		planningCellsMed[3][3] = cellJeudiMed1100;  planningCellsMed[3][4] = cellVendrediMed1100; planningCellsMed[3][5] = cellSamediMed1100;
+		planningCellsMed[3][0] = cellLundi1100Med;  planningCellsMed[3][1] = cellMardi1100Med;  planningCellsMed[3][2] = cellMercredi1100Med;
+		planningCellsMed[3][3] = cellJeudi1100Med;  planningCellsMed[3][4] = cellVendredi1100Med; planningCellsMed[3][5] = cellSamedi1100Med;
 		
-		planningCellsMed[4][0] = cellLundiMed1200;  planningCellsMed[4][1] = cellMardiMed1200;  planningCellsMed[4][2] = cellMercrediMed1200;
-		planningCellsMed[4][3] = cellJeudiMed1200;  planningCellsMed[4][4] = cellVendrediMed1200; planningCellsMed[4][5] = cellSamediMed1200;
+		planningCellsMed[4][0] = cellLundi1200Med;  planningCellsMed[4][1] = cellMardi1200Med;  planningCellsMed[4][2] = cellMercredi1200Med;
+		planningCellsMed[4][3] = cellJeudi1200Med;  planningCellsMed[4][4] = cellVendredi1200Med; planningCellsMed[4][5] = cellSamedi1200Med;
 		
-		planningCellsMed[5][0] = cellLundiMed1300;  planningCellsMed[5][1] = cellMardiMed1300;  planningCellsMed[5][2] = cellMercrediMed1300;
-		planningCellsMed[5][3] = cellJeudiMed1300;  planningCellsMed[5][4] = cellVendrediMed1300; planningCellsMed[5][5] = cellSamediMed1300;
+		planningCellsMed[5][0] = cellLundi1300Med;  planningCellsMed[5][1] = cellMardi1300Med;  planningCellsMed[5][2] = cellMercredi1300Med;
+		planningCellsMed[5][3] = cellJeudi1300Med;  planningCellsMed[5][4] = cellVendredi1300Med; planningCellsMed[5][5] = cellSamedi1300Med;
 		
-		planningCellsMed[6][0] = cellLundiMed1400;  planningCellsMed[6][1] = cellMardiMed1400;  planningCellsMed[6][2] = cellMercrediMed1400;
-		planningCellsMed[6][3] = cellJeudiMed1400;  planningCellsMed[6][4] = cellVendrediMed1400; planningCellsMed[6][5] = cellSamediMed1400;
+		planningCellsMed[6][0] = cellLundi1400Med;  planningCellsMed[6][1] = cellMardi1400Med;  planningCellsMed[6][2] = cellMercredi1400Med;
+		planningCellsMed[6][3] = cellJeudi1400Med;  planningCellsMed[6][4] = cellVendredi1400Med; planningCellsMed[6][5] = cellSamedi1400Med;
 		
-		planningCellsMed[7][0] = cellLundiMed1500;  planningCellsMed[7][1] = cellMardiMed1500;  planningCellsMed[7][2] = cellMercrediMed1500;
-		planningCellsMed[7][3] = cellJeudiMed1500;  planningCellsMed[7][4] = cellVendrediMed1500; planningCellsMed[7][5] = cellSamediMed1500;
+		planningCellsMed[7][0] = cellLundi1500Med;  planningCellsMed[7][1] = cellMardi1500Med;  planningCellsMed[7][2] = cellMercredi1500Med;
+		planningCellsMed[7][3] = cellJeudi1500Med;  planningCellsMed[7][4] = cellVendredi1500Med; planningCellsMed[7][5] = cellSamedi1500Med;
 		
-		planningCellsMed[8][0] = cellLundiMed1600;  planningCellsMed[8][1] = cellMardiMed1600;  planningCellsMed[8][2] = cellMercrediMed1600;
-		planningCellsMed[8][3] = cellJeudiMed1600;  planningCellsMed[8][4] = cellVendrediMed1600; planningCellsMed[8][5] = cellSamediMed1600;
+		planningCellsMed[8][0] = cellLundi1600Med;  planningCellsMed[8][1] = cellMardi1600Med;  planningCellsMed[8][2] = cellMercredi1600Med;
+		planningCellsMed[8][3] = cellJeudi1600Med;  planningCellsMed[8][4] = cellVendredi1600Med; planningCellsMed[8][5] = cellSamedi1600Med;
 		
-		planningCellsMed[9][0] = cellLundiMed1700;  planningCellsMed[9][1] = cellMardiMed1700;  planningCellsMed[9][2] = cellMercrediMed1700;
-		planningCellsMed[9][3] = cellJeudiMed1700;  planningCellsMed[9][4] = cellVendrediMed1700; planningCellsMed[9][5] = cellSamediMed1700;
+		planningCellsMed[9][0] = cellLundi1700Med;  planningCellsMed[9][1] = cellMardi1700Med;  planningCellsMed[9][2] = cellMercredi1700Med;
+		planningCellsMed[9][3] = cellJeudi1700Med;  planningCellsMed[9][4] = cellVendredi1700Med; planningCellsMed[9][5] = cellSamedi1700Med;
 	}
 	
 	/**
@@ -577,50 +614,48 @@ public class MedecinDashboardController implements Initializable {
 	 * Ajoute un RDV dans le planning
 	 */
 	private void ajouterRDVAuPlanning(RendezVous rdv) {
-		// Trouver la cellule correspondante
-		DayOfWeek jour = rdv.getDate().getDayOfWeek();
-		int jourIndex = jour.getValue() - 1; // MONDAY=1 → index 0
-		if (jourIndex == 6) return; // Dimanche = pas affiché
-		
-		int heure = rdv.getHeure().getHour();
-		int heureIndex = heure - 8; // 8h → index 0
-		
-		if (heureIndex < 0 || heureIndex > 9 || jourIndex < 0 || jourIndex > 5) {
-			return; // Hors planning
-		}
-		
-		VBox cell = planningCellsMed[heureIndex][jourIndex];
-		if (cell == null) return;
-		
-		// Créer le label pour le RDV
-		Label lblRDV = new Label(rdv.getAffichageCellule());
-		lblRDV.setStyle(
-			"-fx-background-color: " + rdv.getStatut().getCouleur() + "; " +
-			"-fx-text-fill: white; " +
-			"-fx-padding: 10 15; " +
-			"-fx-background-radius: 12; " +
-			"-fx-font-weight: bold; " +
-			"-fx-font-size: 13; " +
-			"-fx-alignment: center-left; " +
-			"-fx-cursor: hand;"
-		);
-		lblRDV.setMaxWidth(Double.MAX_VALUE);
-		lblRDV.setTextOverrun(OverrunStyle.ELLIPSIS);
-		
-		// Tooltip pour voir le texte complet
-		String texteTooltip = rdv.getPatient().getPrenom() + " " + rdv.getPatient().getNom() +
-		                      "\nDr. " + rdv.getDocteur().getPrenom() + " " + rdv.getDocteur().getNom() +
-		                      "\nMotif: " + (rdv.getMotif() != null ? rdv.getMotif() : "-") +
-		                      "\nStatut: " + rdv.getStatut().getLabel();
-		Tooltip tooltip = new Tooltip(texteTooltip);
-		Tooltip.install(lblRDV, tooltip);
-		
-		// Clic pour modifier le statut
-		lblRDV.setOnMouseClicked(event -> ouvrirModifierStatutRDV(rdv));
-		
-		// Ajouter à la cellule
-		cell.getChildren().add(lblRDV);
-		VBox.setMargin(lblRDV, new Insets(2));
+	    // Trouver la cellule correspondante
+	    DayOfWeek jour = rdv.getDate().getDayOfWeek();
+	    int jourIndex = jour.getValue() - 1; // MONDAY=1 → index 0
+	    if (jourIndex == 6) return; // Dimanche = pas affiché
+	    
+	    int heure = rdv.getHeure().getHour();
+	    int heureIndex = heure - 8; // 8h → index 0
+	    
+	    if (heureIndex < 0 || heureIndex > 9 || jourIndex < 0 || jourIndex > 5) {
+	        return; // Hors planning
+	    }
+	    
+	    VBox cell = planningCellsMed[heureIndex][jourIndex];
+	    if (cell == null) return;
+	    
+	    // Créer le label pour le RDV
+	    Label lblRDV = new Label(rdv.getAffichageCellule());
+	    
+	    // 🆕 STYLE IDENTIQUE À LA SECRÉTAIRE
+	    lblRDV.setStyle(
+	        "-fx-background-color: " + rdv.getStatut().getCouleur() + "; " +
+	        "-fx-text-fill: white; " +
+	        "-fx-padding: 5; " +                    // ✅ 5 au lieu de 10 15
+	        "-fx-background-radius: 5; " +          // ✅ 5 au lieu de 12
+	        "-fx-font-size: 11px; " +               // ✅ 11px au lieu de 13
+	        "-fx-cursor: hand;"                     // ✅ Pas de font-weight bold
+	    );
+	    
+	    lblRDV.setMaxWidth(Double.MAX_VALUE);
+	    lblRDV.setWrapText(true);                   // 🆕 TRÈS IMPORTANT pour éviter l'overflow !
+	    lblRDV.setTextOverrun(OverrunStyle.ELLIPSIS);
+	    
+	    // Tooltip pour voir le texte complet
+	    Tooltip tooltip = new Tooltip(rdv.getAffichageCellule());
+	    Tooltip.install(lblRDV, tooltip);
+	    
+	    // Clic pour modifier le statut
+	    lblRDV.setOnMouseClicked(event -> ouvrirModifierStatutRDV(rdv));
+	    
+	    // Ajouter à la cellule
+	    cell.getChildren().add(lblRDV);
+	    VBox.setMargin(lblRDV, new Insets(2));
 	}
 	
 	// ==================== NAVIGATION SIDEBAR ====================
@@ -695,20 +730,31 @@ public class MedecinDashboardController implements Initializable {
 	// ==================== RAFRAÎCHISSEMENT ====================
 	
 	/**
-	 * Rafraîchit tout (planning, graphique, consultations)
+	 * RMÉTHODE CENTRALE - rafraîchit tout (planning, graphique, consultations)
 	 */
-	private void rafraichirTout() {
-		rafraichirPlanning();
-		chargerGraphiqueSemaine();
-		chargerConsultationsDuJour();
-		chargerStatistiquesAccueil();
+	/**
+	 * 🆕 Rafraîchit TOUTES les données du dashboard
+	 */
+	public void rafraichirTout() {
+	    System.out.println("🔄 Rafraîchissement complet dashboard médecin...");
+	    
+	    chargerPatients();
+	    chargerRendezVous(selectedDate);
+	    chargerConsultationsDuJour();
+	    chargerStatistiquesAccueil();
+	    chargerGraphiqueSemaine();
+	    
+	    System.out.println("✅ Dashboard médecin rafraîchi");
 	}
 
 	/**
 	 * Rafraîchit le planning (recharge depuis la BDD)
 	 */
 	public void rafraichirPlanning() {
-		chargerRendezVous(selectedDate);
+	    chargerRendezVous(selectedDate);
+	    chargerConsultationsDuJour();
+	    chargerStatistiquesAccueil();
+	    chargerGraphiqueSemaine();
 	}
 	
 	/**
@@ -716,56 +762,31 @@ public class MedecinDashboardController implements Initializable {
 	 * À AJOUTER dans MedecinDashboardController
 	 */
 	private void chargerStatistiquesAccueil() {
-	    if (medecinConnecte == null) {
-	        System.err.println("❌ Impossible de charger stats - medecin NULL");
-	        return;
-	    }
+	    if (medecinConnecte == null) return;
 	    
-	    System.out.println("📊 Chargement statistiques pour Dr. " + medecinConnecte.getNom());
+	    System.out.println("📊 Chargement statistiques médecin...");
 	    
-	    // 1. RDV aujourd'hui (statut PREVU)
+	    // RDV aujourd'hui
 	    List<RendezVous> rdvAujourdhui = rendezVousDAO.getRendezVousByDate(LocalDate.now());
 	    long rdvPrevus = rdvAujourdhui.stream()
 	        .filter(rdv -> rdv.getMedecin().getIdMedecin() == medecinConnecte.getIdMedecin())
 	        .filter(rdv -> rdv.getStatut() == RendezVous.Statut.PREVU)
 	        .count();
+	    if (lblRdvAujourdhui != null) lblRdvAujourdhui.setText(String.valueOf(rdvPrevus));
 	    
-	    if (lblRdvAujourdhui != null) {
-	        lblRdvAujourdhui.setText(String.valueOf(rdvPrevus));
-	    }
+	    // Total consultations
+	    int total = consultationDAO.compterConsultationsMedecin(medecinConnecte.getIdMedecin());
+	    if (lblTotalConsultations != null) lblTotalConsultations.setText(String.valueOf(total));
 	    
-	    // 2. Total consultations (depuis le début)
-	    int totalConsultations = consultationDAO.compterConsultationsMedecin(
-	        medecinConnecte.getIdMedecin()
-	    );
+	    // Patients uniques
+	    List<String> patients = consultationDAO.getNumSecuPatientsConsultes(medecinConnecte.getIdMedecin());
+	    if (lblTotalPatients != null) lblTotalPatients.setText(String.valueOf(patients.size()));
 	    
-	    if (lblTotalConsultations != null) {
-	        lblTotalConsultations.setText(String.valueOf(totalConsultations));
-	    }
+	    // Revenus
+	    double revenus = consultationDAO.getTotalRevenusMedecin(medecinConnecte.getIdMedecin());
+	    if (lblRevenusMois != null) lblRevenusMois.setText(String.format("%.0f", revenus));
 	    
-	    // 3. Total patients uniques
-	    List<String> patientsUniques = consultationDAO.getNumSecuPatientsConsultes(
-	        medecinConnecte.getIdMedecin()
-	    );
-	    
-	    if (lblTotalPatients != null) {
-	        lblTotalPatients.setText(String.valueOf(patientsUniques.size()));
-	    }
-	    
-	    // 4. Revenus totaux
-	    double revenus = consultationDAO.getTotalRevenusMedecin(
-	        medecinConnecte.getIdMedecin()
-	    );
-	    
-	    if (lblRevenusMois != null) {
-	        lblRevenusMois.setText(String.format("%.0f", revenus));
-	    }
-	    
-	    System.out.println("✅ Statistiques chargées:");
-	    System.out.println("   - RDV aujourd'hui: " + rdvPrevus);
-	    System.out.println("   - Total consultations: " + totalConsultations);
-	    System.out.println("   - Patients uniques: " + patientsUniques.size());
-	    System.out.println("   - Revenus: " + revenus + " MAD");
+	    System.out.println("✅ Stats médecin chargées");
 	}
 	
 	// ==================== ACTIONS PATIENTS ====================
@@ -860,14 +881,9 @@ public class MedecinDashboardController implements Initializable {
 	        rdv.setStatut(RendezVous.Statut.EFFECTUE);
 	        rendezVousDAO.modifierRendezVous(rdv);
 	        
-	        // 3. 🆕 RECHARGER L'HISTORIQUE DES PATIENTS
-	        chargerPatients();
-	        
-	        // 4. Rafraîchir le planning et les consultations du jour
-	        rafraichirPlanning();
-	        chargerConsultationsDuJour();
-	        chargerGraphiqueSemaine();
-	        
+	        // 3. Rafraîchir le planning et les consultations du jour
+	        rafraichirTout(); // 🔄 RAFRAÎCHIR TOUT
+
 	        System.out.println("✅ Historique patients rechargé");
 	    } else {
 	        System.err.println("❌ Échec enregistrement consultation");
@@ -939,10 +955,7 @@ public class MedecinDashboardController implements Initializable {
 	    if (success) {
 	        System.out.println("✅ RDV enregistré en BDD");
 	        
-	        // 2. 🆕 RECHARGER LE PLANNING COMPLET
-	        chargerRendezVous(selectedDate);
-	        
-	        // 3. Recharger aussi les consultations du jour si c'est aujourd'hui
+	        // Recharger aussi les consultations du jour si c'est aujourd'hui
 	        if (rdv.getDate().equals(LocalDate.now())) {
 	            chargerConsultationsDuJour();
 	        }
@@ -954,6 +967,8 @@ public class MedecinDashboardController implements Initializable {
 	        alert.setTitle("Succès");
 	        alert.setContentText("Rendez-vous ajouté avec succès !");
 	        alert.show();
+	        
+	        rafraichirTout(); // 🔄 RAFRAÎCHIR TOUT
 	    } else {
 	        System.err.println("❌ Échec ajout RDV");
 	        Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -972,6 +987,7 @@ public class MedecinDashboardController implements Initializable {
 		if (success) {
 			rafraichirTout();
 			System.out.println("✅ RDV supprimé");
+	        rafraichirTout(); // 🔄 RAFRAÎCHIR TOUT
 		} else {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.setTitle("Erreur");

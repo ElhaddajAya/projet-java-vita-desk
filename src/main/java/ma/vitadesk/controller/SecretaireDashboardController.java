@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -186,9 +187,6 @@ public class SecretaireDashboardController implements Initializable {
 	    consultationDAO = new ConsultationDAOImpl();
 	    secretaireDAO = new SecretaireDAOImpl(); // ← NE PAS OUBLIER
 	    
-	    // Configuration des graphiques
-	    configurerGraphiques();
-	    
 	    // Configuration de la page Patients
 	    configurerPagePatients();
 	    
@@ -197,6 +195,9 @@ public class SecretaireDashboardController implements Initializable {
 	    
 	    // Configuration du planning
 	    configurerPlanning();
+	    
+	    // Configuration des graphiques
+        chargerGraphiqueSemaine();
 	    
 	    // 🆕 SÉLECTIONNER L'ONGLET ACCUEIL PAR DÉFAUT
 	    tabPaneMainSec.getSelectionModel().select(tabAccueilSec);
@@ -248,6 +249,10 @@ public class SecretaireDashboardController implements Initializable {
 	        chargerMedecins();
 	        chargerRendezVous(selectedDate);
 	        
+	        chargerStatistiquesAccueil();
+	        chargerGraphiqueSemaine();
+	        chargerGraphiqueEvolution();
+	        
 	        System.out.println("✅ Toutes les données chargées");
 	        
 	    } else {
@@ -260,36 +265,62 @@ public class SecretaireDashboardController implements Initializable {
     }
 		
 	// ==================== CONFIGURATION GRAPHIQUES ====================
-	
 	/**
-	 * Configure les graphiques de la page d'accueil
-	 * 🆕 TODO: Charger les vraies données depuis la BDD avec consultationDAO
-	 */
-	private void configurerGraphiques() {
-		// Graphique en barres - RDV de la semaine
-		XYChart.Series<String, Number> seriesBar = new XYChart.Series<>();
-		seriesBar.setName("Rendez-vous");
-		seriesBar.getData().add(new XYChart.Data<>("Lundi", 25));
-		seriesBar.getData().add(new XYChart.Data<>("Mardi", 30));
-		seriesBar.getData().add(new XYChart.Data<>("Mercredi", 22));
-		seriesBar.getData().add(new XYChart.Data<>("Jeudi", 28));
-		seriesBar.getData().add(new XYChart.Data<>("Vendredi", 35));
-		seriesBar.getData().add(new XYChart.Data<>("Samedi", 18));
-		
-		barRdvSemaine.getData().clear();
-		barRdvSemaine.getData().add(seriesBar);
-		
-		// Graphique linéaire - 30 derniers jours (garder les données fictives)
-		XYChart.Series<String, Number> seriesLine = new XYChart.Series<>();
-		seriesLine.setName("Consultations");
-		// [Garder toutes les données du graphique linéaire...]
-		seriesLine.getData().add(new XYChart.Data<>("15/11", 28));
-		seriesLine.getData().add(new XYChart.Data<>("16/11", 32));
-		// ... etc (garder tout comme avant)
-		
-		lineRdv30Jours.getData().clear();
-		lineRdv30Jours.getData().add(seriesLine);
+     * Charge le graphique de la semaine avec les VRAIES données de la BDD
+     */
+	private void chargerGraphiqueSemaine() {
+	    System.out.println("📊 Chargement graphique semaine...");
+	    
+	    LocalDate lundi = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+	    
+	    int[] rdvParJour = new int[6];
+	    for (int i = 0; i < 6; i++) {
+	        LocalDate jour = lundi.plusDays(i);
+	        rdvParJour[i] = rendezVousDAO.getRendezVousByDate(jour).size();
+	    }
+	    
+	    XYChart.Series<String, Number> series = new XYChart.Series<>();
+	    series.setName("Rendez-vous");
+	    series.getData().add(new XYChart.Data<>("Lundi", rdvParJour[0]));
+	    series.getData().add(new XYChart.Data<>("Mardi", rdvParJour[1]));
+	    series.getData().add(new XYChart.Data<>("Mercredi", rdvParJour[2]));
+	    series.getData().add(new XYChart.Data<>("Jeudi", rdvParJour[3]));
+	    series.getData().add(new XYChart.Data<>("Vendredi", rdvParJour[4]));
+	    series.getData().add(new XYChart.Data<>("Samedi", rdvParJour[5]));
+	    
+	    barRdvSemaine.getData().clear();
+	    barRdvSemaine.getData().add(series);
+	    
+	    System.out.println("✅ Graphique semaine chargé");
 	}
+    
+    /**
+     * Charge le graphique de l'evolution des RDV en 30 jours
+     */
+    private void chargerGraphiqueEvolution() {
+        System.out.println("📊 Chargement graphique évolution 30 jours...");
+        
+        LocalDate aujourdhui = LocalDate.now();
+        LocalDate il_y_a_30_jours = aujourdhui.minusDays(29);
+        
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("RDV quotidiens");
+        
+        LocalDate jour = il_y_a_30_jours;
+        while (!jour.isAfter(aujourdhui)) {
+            List<RendezVous> rdvDuJour = rendezVousDAO.getRendezVousByDate(jour);
+	        System.out.println("   🔍 " + jour + " : " + rdvDuJour.size() + " RDV trouvé(s)");
+            String labelJour = jour.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM"));
+            series.getData().add(new XYChart.Data<>(labelJour, rdvDuJour.size()));
+            jour = jour.plusDays(1);
+        }
+        
+        lineRdv30Jours.getData().clear();
+        lineRdv30Jours.getData().add(series);
+        
+        System.out.println("✅ Graphique évolution chargé (30 jours)");
+    }
+
 	
 	// ==================== CONFIGURATION PAGE PATIENTS ====================
 	
@@ -476,18 +507,33 @@ public class SecretaireDashboardController implements Initializable {
 	 * 🆕 Charge les rendez-vous d'une date depuis la BDD
 	 */
 	private void chargerRendezVous(LocalDate date) {
-		// Récupérer les RDV de la date depuis la BDD
-		List<RendezVous> rdvs = rendezVousDAO.getRendezVousByDate(date);
-		
-		// Vider toutes les cellules du planning
-		viderToutesCellules();
-		
-		// Remplir le planning avec les RDV de la BDD
-		for (RendezVous rdv : rdvs) {
-			ajouterRDVAuPlanning(rdv);
-		}
-		
-		System.out.println("✅ " + rdvs.size() + " RDV chargés pour le " + date);
+	    System.out.println("📅 Chargement RDV pour la semaine du " + date);
+	    
+	    // Vider toutes les cellules
+	    viderToutesCellules();
+	    
+	    // CALCULER LA SEMAINE COMPLÈTE (Lundi à Samedi)
+	    LocalDate lundi = date.with(java.time.DayOfWeek.MONDAY);
+	    LocalDate samedi = lundi.plusDays(5);
+	    
+	    System.out.println("   📆 Semaine: du " + lundi + " au " + samedi);
+	    
+	    // CHARGER TOUS LES JOURS DE LA SEMAINE
+	    LocalDate jour = lundi;
+	    int totalRdv = 0;
+	    
+	    while (!jour.isAfter(samedi)) {
+	        List<RendezVous> rdvDuJour = rendezVousDAO.getRendezVousByDate(jour);
+	        
+	        for (RendezVous rdv : rdvDuJour) {
+	            ajouterRDVAuPlanning(rdv);
+	            totalRdv++;
+	        }
+	        
+	        jour = jour.plusDays(1);
+	    }
+	    
+	    System.out.println("✅ " + totalRdv + " RDV chargés pour la semaine");
 	}
 	
 	// ==================== SAUVEGARDE EN BDD ====================
@@ -607,23 +653,38 @@ public class SecretaireDashboardController implements Initializable {
 	    // Initialiser le tableau des cellules
 	    initializePlanningCells();
 	    
-	    // DatePicker : changer de date
-	    datePickerPlanning.setValue(selectedDate);
-	    datePickerPlanning.setOnAction(event -> {
-	        selectedDate = datePickerPlanning.getValue();
-	        if (selectedDate != null) {
-	            // 🆕 METTRE À JOUR LE LABEL
-	            selectedDatePlanning.setText("Planning du " + 
-	                selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+	    // 🔄 CONFIGURER LE LISTENER AVANT setValue()
+	    datePickerPlanning.valueProperty().addListener((observable, oldValue, newValue) -> {
+	        if (newValue != null && (oldValue == null || !newValue.equals(oldValue))) {
+	            selectedDate = newValue;
+	            System.out.println("🗓️ DATE CHANGÉE (Secrétaire) : " + oldValue + " → " + newValue);
 	            
-	            // 🆕 CHARGER LES RDV DE LA NOUVELLE DATE DEPUIS LA BDD
+	            // Calculer la semaine complète
+	            LocalDate lundi = selectedDate.with(java.time.DayOfWeek.MONDAY);
+	            LocalDate samedi = lundi.plusDays(5);
+	            
+	            // Mettre à jour le label avec la SEMAINE
+	            selectedDatePlanning.setText("Planning du " + 
+	                lundi.format(DateTimeFormatter.ofPattern("dd/MM")) + 
+	                " au " + 
+	                samedi.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+	            
+	            // Recharger le planning pour cette semaine
+	            System.out.println("📅 Rechargement planning semaine du " + lundi + " au " + samedi);
 	            chargerRendezVous(selectedDate);
 	        }
 	    });
 	    
+	    // Initialiser la valeur APRÈS avoir configuré le listener
+	    datePickerPlanning.setValue(selectedDate);
+	    
 	    // INITIALISER LE LABEL AU DÉMARRAGE
+	    LocalDate lundi = selectedDate.with(java.time.DayOfWeek.MONDAY);
+	    LocalDate samedi = lundi.plusDays(5);
 	    selectedDatePlanning.setText("Planning du " + 
-	        selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+	        lundi.format(DateTimeFormatter.ofPattern("dd/MM")) + 
+	        " au " + 
+	        samedi.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 	}
 	
 	/**
@@ -1067,6 +1128,13 @@ public class SecretaireDashboardController implements Initializable {
 		if (success) {
 			rafraichirPlanning();
 			System.out.println("✅ RDV ajouté");
+
+	        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+	        alert.setTitle("Succès");
+	        alert.setContentText("Rendez-vous ajouté avec succès !");
+	        alert.show();
+	        
+	        rafraichirTout(); // 🔄 RAFRAÎCHIR TOUT
 		} else {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.setTitle("Erreur");
@@ -1085,6 +1153,7 @@ public class SecretaireDashboardController implements Initializable {
 		if (success) {
 			rafraichirPlanning();
 			System.out.println("✅ RDV supprimé");
+	        rafraichirTout(); // 🔄 RAFRAÎCHIR TOUT
 		} else {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.setTitle("Erreur");
@@ -1097,7 +1166,26 @@ public class SecretaireDashboardController implements Initializable {
 	 * Rafraîchit le planning (recharge depuis la BDD)
 	 */
 	public void rafraichirPlanning() {
-		chargerRendezVous(selectedDate);
+	    chargerRendezVous(selectedDate);
+	    chargerStatistiquesAccueil();
+	    chargerGraphiqueSemaine();
+	}
+	
+	/**
+	 * Rafraîchit TOUTES les données du dashboard
+	 * Appelée après chaque action (ajout, modification, suppression)
+	 */
+	public void rafraichirTout() {
+	    System.out.println("🔄 Rafraîchissement complet dashboard secrétaire...");
+	    
+	    chargerPatients();
+	    chargerMedecins();
+	    chargerRendezVous(selectedDate);
+	    chargerStatistiquesAccueil();
+	    chargerGraphiqueSemaine();
+	    chargerGraphiqueEvolution();
+	    
+	    System.out.println("✅ Dashboard secrétaire rafraîchi");
 	}
 
     // Méthode réutilisable pour le style d'en-tête
@@ -1486,37 +1574,34 @@ public class SecretaireDashboardController implements Initializable {
     }
     
     /**
-     * 🆕 Charge les statistiques de l'accueil depuis la BDD
+     * 🆕 Charge les statistiques de l'accueil avec les VRAIES données
      */
     private void chargerStatistiquesAccueil() {
-        // Nombre de RDV prévus aujourd'hui
+        System.out.println("📊 Chargement statistiques secrétaire...");
+        
+        // RDV prévus aujourd'hui
         List<RendezVous> rdvAujourdhui = rendezVousDAO.getRendezVousByDate(LocalDate.now());
         long rdvPrevus = rdvAujourdhui.stream()
             .filter(rdv -> rdv.getStatut() == RendezVous.Statut.PREVU)
             .count();
+        if (lblRdvPrevus != null) lblRdvPrevus.setText(String.valueOf(rdvPrevus));
         
-        if (lblRdvPrevus != null) {
-            lblRdvPrevus.setText(String.valueOf(rdvPrevus));
-        }
-        
-        // Nombre de consultations réalisées ce mois
-        // Vous devrez ajouter une méthode dans ConsultationDAO pour ça
+        // Consultations ce mois
         int consultationsCeMois = consultationDAO.getConsultationsCeMois();
-        if (lblConsultationsCeMois != null) {
-            lblConsultationsCeMois.setText(String.valueOf(consultationsCeMois));
-        }
+        if (lblConsultationsCeMois != null) lblConsultationsCeMois.setText(String.valueOf(consultationsCeMois));
         
-        // Nombre de nouveaux patients ce mois
+        // Nouveaux patients
         int nouveauxPatients = patientDAO.getNouveauxPatientsCeMois();
-        if (lblNouveauxPatients != null) {
-            lblNouveauxPatients.setText(String.valueOf(nouveauxPatients));
-        }
+        if (lblNouveauxPatients != null) lblNouveauxPatients.setText(String.valueOf(nouveauxPatients));
         
-        // Revenu estimé du jour
-        double revenuJour = calculerRevenuJour(rdvAujourdhui);
-        if (lblRevenuJour != null) {
-            lblRevenuJour.setText(String.format("%.0f", revenuJour));
-        }
+        // Revenu du jour
+        long rdvEffectues = rdvAujourdhui.stream()
+            .filter(rdv -> rdv.getStatut() == RendezVous.Statut.EFFECTUE)
+            .count();
+        double revenuJour = rdvEffectues * 300.0;
+        if (lblRevenuJour != null) lblRevenuJour.setText(String.format("%.0f", revenuJour));
+        
+        System.out.println("✅ Stats secrétaire chargées");
     }
 
     /**

@@ -91,6 +91,8 @@ public class ModifierStatutRDVController {
                 } else if (dashboardControllerMed != null) {
                     dashboardControllerMed.rafraichirPlanning();
                     dashboardControllerMed.chargerGraphiqueSemaine();
+                    dashboardControllerMed.chargerConsultationsDuJour(); // 🔄 Rafraîchir la liste
+                    dashboardControllerMed.chargerConsultationsDuJour();
                 }
                 
                 fermer();
