@@ -495,23 +495,41 @@ public class MedecinDashboardController implements Initializable {
     public void chargerGraphiqueSemaine() {
         if (medecinConnecte == null) return;
         
-        System.out.println("📊 Chargement graphique semaine...");
+        System.out.println("📊 Chargement graphique semaine actuelle...");
         
+        // 🔄 FORCER LE VIDAGE COMPLET DU GRAPHIQUE
+        barRdvSemaineMed.getData().clear();
+        
+        // Récupérer les stats de la semaine ACTUELLE (en cours)
         int[] consultationsParJour = consultationDAO.getConsultationsParJourSemaine(
             medecinConnecte.getIdMedecin()
         );
         
+        // Afficher les stats dans la console pour déboguer
+        System.out.println("   📊 Stats de la semaine :");
+        String[] jours = {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"};
+        int total = 0;
+        for (int i = 0; i < 7; i++) {
+            System.out.println("      " + jours[i] + " : " + consultationsParJour[i] + " consultation(s)");
+            total += consultationsParJour[i];
+        }
+        System.out.println("   📊 Total semaine : " + total + " consultations");
+        
+        // Créer la série de données
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Consultations");
-        String[] jours = {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"};
+        
         for (int i = 0; i < 7; i++) {
             series.getData().add(new XYChart.Data<>(jours[i], consultationsParJour[i]));
         }
         
-        barRdvSemaineMed.getData().clear();
+        // Ajouter la série au graphique
         barRdvSemaineMed.getData().add(series);
         
-        System.out.println("✅ Graphique médecin chargé");
+        // 🔄 FORCER LE REDESSIN DU GRAPHIQUE (JavaFX)
+        barRdvSemaineMed.layout();
+        
+        System.out.println("✅ Graphique médecin chargé et affiché");
     }
     
 	// ==================== CONFIGURATION PLANNING ====================
